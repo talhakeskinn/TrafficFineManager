@@ -18,25 +18,25 @@ namespace trafficFineManager.Controllers
         }
 
         [HttpGet]
-        public IActionResult Login()
+        public IActionResult Login(string? returnUrl = null)
         {
-            // Eğer zaten giriş yapmışsa ana sayfaya yönlendir
             if (User.Identity != null && User.Identity.IsAuthenticated)
             {
                 return RedirectToAction("Index", "Home");
             }
+
+            ViewData["ReturnUrl"] = returnUrl;
             return View();
         }
 
         [HttpPost]
-        public async Task<IActionResult> Login(LoginViewModel model)
+        public async Task<IActionResult> Login(LoginViewModel model, string? returnUrl = null)
         {
             if (!ModelState.IsValid)
             {
                 return View(model);
             }
 
-            // Sicil numarası veya Kimlik numarası ile giriş yapabilme
             var user = await _context.Users
                 .Include(u => u.Role)
                 .FirstOrDefaultAsync(u => 
@@ -45,30 +45,30 @@ namespace trafficFineManager.Controllers
 
             if (user == null)
             {
-                ModelState.AddModelError("", "Sicil No/TC No veya şifre hatalı!");
+                ModelState.AddModelError(string.Empty, "Sicil/TC No veya Şifre hatalı!");
                 return View(model);
             }
 
-            // Kullanıcı bulunduysa Claim'leri oluştur (Kimlik bilgileri)
             var claims = new List<System.Security.Claims.Claim>
             {
                 new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Name, $"{user.FirstName} {user.LastName}"),
-                new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Email, user.Email),
-                new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Role, user.Role.Name) // "Yonetici", "Kullanici", "Finans"
+                new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Role, user.Role.Name)
             };
 
             var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
 
             var authProperties = new AuthenticationProperties
             {
-                IsPersistent = true, // Tarayıcı kapansa da hatırlansın
+                IsPersistent = true,
             };
 
-            await HttpContext.SignInAsync(
-                CookieAuthenticationDefaults.AuthenticationScheme, 
-                new ClaimsPrincipal(claimsIdentity), 
-                authProperties);
+            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity), authProperties);
+
+            if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+            {
+                return Redirect(returnUrl);
+            }
 
             return RedirectToAction("Index", "Home");
         }

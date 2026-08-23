@@ -28,7 +28,7 @@ namespace trafficFineManager.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "Yonetici")] // Sadece yöneticiler görebilir
+        [Authorize(Roles = "Yonetici")]
         public async Task<IActionResult> AuditLog()
         {
             var logs = await _trafficFineService.GetAllHistoryAsync();
@@ -38,38 +38,8 @@ namespace trafficFineManager.Controllers
         [HttpGet]
         public async Task<IActionResult> Create()
         {
-            var brands = await _context.Brands.ToListAsync();
-            ViewBag.Brands = brands.Select(b => new SelectListItem
-            {
-                Value = b.Id.ToString(),
-                Text = b.Name
-            }).ToList();
-
-            var models = await _context.Models.ToListAsync();
-            ViewBag.Models = models.Select(m => new SelectListItem
-            {
-                Value = m.Id.ToString(),
-                Text = m.Name,
-                // We could use Group for better UI, but flat is ok for now. 
-                // Or we can add data attributes if we wanted to filter with JS.
-                // For simplicity, we just pass them all.
-            }).ToList();
-
-            var vehicleTypes = Enum.GetValues(typeof(trafficFineManager.Entities.Enums.VehicleType)).Cast<trafficFineManager.Entities.Enums.VehicleType>();
-            ViewBag.VehicleTypes = vehicleTypes.Select(e => new SelectListItem
-            {
-                Value = ((int)e).ToString(),
-                Text = e.ToString()
-            }).ToList();
-
-            var fineTypes = await _context.FineTypes.Where(f => f.IsActive).ToListAsync();
-            ViewBag.FineTypes = fineTypes.Select(f => new SelectListItem
-            {
-                Value = f.Id.ToString(),
-                Text = $"{f.ArticleNumber} - {f.Description} ({f.Amount}₺)"
-            }).ToList();
-
-            return View();
+            await PopulateViewBagsAsync();
+            return View(new CreateTrafficFineViewModel());
         }
 
         [HttpPost]
@@ -77,22 +47,7 @@ namespace trafficFineManager.Controllers
         {
             if (!ModelState.IsValid)
             {
-                var brands = await _context.Brands.ToListAsync();
-                ViewBag.Brands = brands.Select(b => new SelectListItem { Value = b.Id.ToString(), Text = b.Name }).ToList();
-
-                var models = await _context.Models.ToListAsync();
-                ViewBag.Models = models.Select(m => new SelectListItem { Value = m.Id.ToString(), Text = m.Name }).ToList();
-
-                var vehicleTypes = Enum.GetValues(typeof(trafficFineManager.Entities.Enums.VehicleType)).Cast<trafficFineManager.Entities.Enums.VehicleType>();
-                ViewBag.VehicleTypes = vehicleTypes.Select(e => new SelectListItem { Value = ((int)e).ToString(), Text = e.ToString() }).ToList();
-
-                var fineTypes = await _context.FineTypes.Where(f => f.IsActive).ToListAsync();
-                ViewBag.FineTypes = fineTypes.Select(f => new SelectListItem
-                {
-                    Value = f.Id.ToString(),
-                    Text = $"{f.ArticleNumber} - {f.Description} ({f.Amount}₺)"
-                }).ToList();
-
+                await PopulateViewBagsAsync();
                 return View(model);
             }
 
@@ -108,9 +63,6 @@ namespace trafficFineManager.Controllers
             ViewBag.TrafficFineId = id;
             return View(historyRecords);
         }
-
-
-    
 
         [HttpPost]
         [Authorize(Roles = "Yonetici, Finans")]
@@ -134,6 +86,7 @@ namespace trafficFineManager.Controllers
             await _trafficFineService.RejectFineAsync(model, currentUserId);
             return RedirectToAction("Index");
         }
+
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
@@ -156,9 +109,32 @@ namespace trafficFineManager.Controllers
                 FineTypeId = fine.FineTypeId,
                 ViolatorName = fine.ViolatorName,
                 ViolatorTC = fine.ViolatorTC,
+                ViolationDate = fine.ViolationDate,
+                CityId = fine.CityId,
+                DistrictId = fine.DistrictId,
                 ReceiptNumber = fine.ReceiptNumber 
             };
 
+            await PopulateViewBagsAsync();
+            return View(model);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Edit(EditTrafficFineViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                await PopulateViewBagsAsync();
+                return View(model);
+            }
+            
+            int currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            await _trafficFineService.UpdateFineAsync(model, currentUserId);
+            return RedirectToAction(nameof(Index));
+        }
+
+        private async Task PopulateViewBagsAsync()
+        {
             var brands = await _context.Brands.ToListAsync();
             ViewBag.Brands = brands.Select(b => new SelectListItem { Value = b.Id.ToString(), Text = b.Name }).ToList();
 
@@ -175,37 +151,11 @@ namespace trafficFineManager.Controllers
                 Text = $"{f.ArticleNumber} - {f.Description} ({f.Amount}₺)"
             }).ToList();
 
-            return View(model);
+            var cities = await _context.Cities.ToListAsync();
+            ViewBag.Cities = cities.Select(c => new SelectListItem { Value = c.Id.ToString(), Text = c.Name }).ToList();
+
+            var districts = await _context.Districts.ToListAsync();
+            ViewBag.Districts = districts.Select(d => new SelectListItem { Value = d.Id.ToString(), Text = d.Name }).ToList();
         }
-
-        [HttpPost]
-        public async Task<IActionResult> Edit(EditTrafficFineViewModel model)
-        {
-            if (!ModelState.IsValid)
-            {
-                var brands = await _context.Brands.ToListAsync();
-                ViewBag.Brands = brands.Select(b => new SelectListItem { Value = b.Id.ToString(), Text = b.Name }).ToList();
-
-                var models = await _context.Models.ToListAsync();
-                ViewBag.Models = models.Select(m => new SelectListItem { Value = m.Id.ToString(), Text = m.Name }).ToList();
-
-                var vehicleTypes = Enum.GetValues(typeof(trafficFineManager.Entities.Enums.VehicleType)).Cast<trafficFineManager.Entities.Enums.VehicleType>();
-                ViewBag.VehicleTypes = vehicleTypes.Select(e => new SelectListItem { Value = ((int)e).ToString(), Text = e.ToString() }).ToList();
-
-                var fineTypes = await _context.FineTypes.Where(f => f.IsActive).ToListAsync();
-                ViewBag.FineTypes = fineTypes.Select(f => new SelectListItem
-                {
-                    Value = f.Id.ToString(),
-                    Text = $"{f.ArticleNumber} - {f.Description} ({f.Amount}₺)"
-                }).ToList();
-                
-                return View(model);
-            }
-            
-            int currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-            await _trafficFineService.UpdateFineAsync(model, currentUserId);
-            return RedirectToAction(nameof(Index));
-        }
-
     }
 }

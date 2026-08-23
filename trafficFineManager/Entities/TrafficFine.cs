@@ -14,19 +14,24 @@ namespace trafficFineManager.Entities
         public int FineTypeId { get; set; }
         public FineType FineType { get; set; } = null!;
 
-        // Yeni Eklenenler: Cezayı Yiyen Kişi Bilgileri
         [Required, MaxLength(100)]
         public string ViolatorName { get; set; } = null!;
         
         [Required, MaxLength(11)]
         public string ViolatorTC { get; set; } = null!;
 
-        // Geçmişe dönük kayıtların bozulmaması için (Snapshot)
         [Required, MaxLength(200)]
         public string ViolationReason { get; set; } = null!;
         public decimal Amount { get; set; }
         
-        public DateTime NotificationDate { get; set; }
+        public DateTime ViolationDate { get; set; } = DateTime.Now;
+        public DateTime NotificationDate { get; set; } = DateTime.Now;
+        
+        public int CityId { get; set; }
+        public City City { get; set; } = null!;
+        public int DistrictId { get; set; }
+        public District District { get; set; } = null!;
+
         public FineStatus Status { get; set; } = FineStatus.Yeni;
         [MaxLength(50)]
         public string? ReceiptNumber { get; set; }

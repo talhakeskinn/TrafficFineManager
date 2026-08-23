@@ -6,9 +6,8 @@ namespace trafficFineManager.ViewModels
     public class EditTrafficFineViewModel
     {
         public int Id { get; set; }
-        public int VehicleId { get; set; } // Aracı güncelleyebilmek için
+        public int VehicleId { get; set; }
 
-        // --- ARAÇ BİLGİLERİ (Düzeltilebilir) ---
         [Required(ErrorMessage = "Plaka zorunludur.")]
         [StringLength(15)]
         [Display(Name = "Plaka")]
@@ -36,7 +35,6 @@ namespace trafficFineManager.ViewModels
         [Display(Name = "Araç Sahibi TC Kimlik No")]
         public string OwnerTC { get; set; } = null!;
 
-        // --- CEZA VE SÜRÜCÜ BİLGİLERİ (Düzeltilebilir) ---
         [Required(ErrorMessage = "Lütfen ceza maddesini seçiniz.")]
         [Display(Name = "Ceza Maddesi")]
         public int FineTypeId { get; set; }
@@ -46,10 +44,23 @@ namespace trafficFineManager.ViewModels
         [Display(Name = "Ceza Yiyen Sürücü Ad/Soyad")]
         public string ViolatorName { get; set; } = null!;
 
-        [Required(ErrorMessage = "Sürücü TC Kimlik No zorunludur.")]
+        [Required(ErrorMessage = "Lütfen sürücü TC numarasını giriniz.")]
         [StringLength(11, MinimumLength = 11, ErrorMessage = "TC Kimlik No 11 haneli olmalıdır.")]
         [Display(Name = "Sürücü TC Kimlik No")]
         public string ViolatorTC { get; set; } = null!;
+
+        [Required(ErrorMessage = "Lütfen ceza tarihini giriniz.")]
+        [Display(Name = "Ceza Tarihi (Olay Zamanı)")]
+        [DisplayFormat(DataFormatString = "{0:yyyy-MM-ddTHH:mm}", ApplyFormatInEditMode = true)]
+        public DateTime ViolationDate { get; set; }
+
+        [Required(ErrorMessage = "Lütfen il seçiniz.")]
+        [Display(Name = "Ceza İli")]
+        public int CityId { get; set; }
+
+        [Required(ErrorMessage = "Lütfen ilçe seçiniz.")]
+        [Display(Name = "Ceza İlçesi")]
+        public int DistrictId { get; set; }
 
         [Required(ErrorMessage = "Makbuz numarası zorunludur.")]
         [StringLength(50)]

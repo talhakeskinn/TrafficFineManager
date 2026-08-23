@@ -32,13 +32,22 @@ namespace trafficFineManager.Controllers
             
             var fines = await _context.TrafficFines
                 .Include(t => t.FineType)
-                .Include(t => t.Vehicle)
+                .Include(t => t.Vehicle).ThenInclude(v => v.Brand)
+                .Include(t => t.Vehicle).ThenInclude(v => v.Model)
+                .Include(t => t.Histories)
+                .Include(t => t.City)
+                .Include(t => t.District)
                 .Where(t => t.Vehicle.PlateNumber == plate)
-                .OrderByDescending(t => t.NotificationDate)
+                .OrderByDescending(t => t.ViolationDate)
                 .ToListAsync();
 
             ViewBag.QueriedPlate = plate;
             ViewBag.Fines = fines;
+            if (fines.Any())
+            {
+                var vehicle = fines.First().Vehicle;
+                ViewBag.VehicleInfo = $"{vehicle.Brand.Name} {vehicle.Model.Name} ({vehicle.VehicleType})";
+            }
             
             return View("Index");
         }

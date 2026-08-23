@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TrafficFineApp.Data;
 
@@ -11,9 +12,11 @@ using TrafficFineApp.Data;
 namespace trafficFineManager.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260823094800_AddViolationDate")]
+    partial class AddViolationDate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -107,7 +110,7 @@ namespace trafficFineManager.Migrations
                         new
                         {
                             Id = 1,
-                            Email = "ahmet@test.com",
+                            Email = "ahmet@sirket.com",
                             FirstName = "Ahmet",
                             IdentityNumber = "11111111111",
                             LastName = "Memur",
@@ -118,7 +121,7 @@ namespace trafficFineManager.Migrations
                         new
                         {
                             Id = 2,
-                            Email = "ayse@test.com",
+                            Email = "ayse@sirket.com",
                             FirstName = "Ayşe",
                             IdentityNumber = "22222222222",
                             LastName = "Yönetici",
@@ -129,8 +132,8 @@ namespace trafficFineManager.Migrations
                         new
                         {
                             Id = 3,
-                            Email = "fatma@test.com",
-                            FirstName = "Fatma",
+                            Email = "mehmet@sirket.com",
+                            FirstName = "Mehmet",
                             IdentityNumber = "33333333333",
                             LastName = "Finans",
                             PasswordHash = "123456",
@@ -184,91 +187,6 @@ namespace trafficFineManager.Migrations
                         });
                 });
 
-            modelBuilder.Entity("trafficFineManager.Entities.City", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Cities");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Name = "İstanbul"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Name = "Ankara"
-                        });
-                });
-
-            modelBuilder.Entity("trafficFineManager.Entities.District", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("CityId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CityId");
-
-                    b.ToTable("Districts");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            CityId = 1,
-                            Name = "Kadıköy"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            CityId = 1,
-                            Name = "Beşiktaş"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            CityId = 1,
-                            Name = "Şişli"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            CityId = 2,
-                            Name = "Çankaya"
-                        },
-                        new
-                        {
-                            Id = 5,
-                            CityId = 2,
-                            Name = "Yenimahalle"
-                        });
-                });
-
             modelBuilder.Entity("trafficFineManager.Entities.FineType", b =>
                 {
                     b.Property<int>("Id")
@@ -287,8 +205,8 @@ namespace trafficFineManager.Migrations
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
@@ -301,7 +219,7 @@ namespace trafficFineManager.Migrations
                         new
                         {
                             Id = 1,
-                            Amount = 1506.00m,
+                            Amount = 1506m,
                             ArticleNumber = "47/1-b",
                             Description = "Kırmızı ışık kuralına uymamak",
                             IsActive = true
@@ -309,33 +227,41 @@ namespace trafficFineManager.Migrations
                         new
                         {
                             Id = 2,
-                            Amount = 1506.00m,
+                            Amount = 1506m,
                             ArticleNumber = "51/2-a",
-                            Description = "Hız sınırını %10'dan %30'a kadar aşmak",
+                            Description = "Hız sınırını %10 - %30 aşmak",
                             IsActive = true
                         },
                         new
                         {
                             Id = 3,
-                            Amount = 3135.00m,
+                            Amount = 3135m,
                             ArticleNumber = "51/2-b",
-                            Description = "Hız sınırını %30'dan %50'ye kadar aşmak",
+                            Description = "Hız sınırını %30 - %50 aşmak",
                             IsActive = true
                         },
                         new
                         {
                             Id = 4,
-                            Amount = 1506.00m,
-                            ArticleNumber = "73/c",
-                            Description = "Seyir halinde cep telefonu kullanmak",
+                            Amount = 6439m,
+                            ArticleNumber = "51/2-c",
+                            Description = "Hız sınırını %50'den fazla aşmak",
                             IsActive = true
                         },
                         new
                         {
                             Id = 5,
-                            Amount = 6439.00m,
-                            ArticleNumber = "48/5",
-                            Description = "Alkollü araç kullanmak (1. Defa)",
+                            Amount = 690m,
+                            ArticleNumber = "78/1-a",
+                            Description = "Emniyet kemeri takmamak",
+                            IsActive = true
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Amount = 1506m,
+                            ArticleNumber = "73/c",
+                            Description = "Seyir halinde cep telefonu kullanmak",
                             IsActive = true
                         });
                 });
@@ -379,13 +305,13 @@ namespace trafficFineManager.Migrations
                         {
                             Id = 3,
                             BrandId = 2,
-                            Name = "Focus"
+                            Name = "Transit"
                         },
                         new
                         {
                             Id = 4,
                             BrandId = 2,
-                            Name = "Fiesta"
+                            Name = "Focus"
                         },
                         new
                         {
@@ -418,16 +344,10 @@ namespace trafficFineManager.Migrations
                     b.Property<decimal>("Amount")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<int>("CityId")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<int>("CreatorUserId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("DistrictId")
                         .HasColumnType("int");
 
                     b.Property<int>("FineTypeId")
@@ -466,91 +386,13 @@ namespace trafficFineManager.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CityId");
-
                     b.HasIndex("CreatorUserId");
-
-                    b.HasIndex("DistrictId");
 
                     b.HasIndex("FineTypeId");
 
                     b.HasIndex("VehicleId");
 
                     b.ToTable("TrafficFines");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Amount = 1506.00m,
-                            CityId = 1,
-                            CreatedAt = new DateTime(2026, 7, 9, 14, 0, 0, 0, DateTimeKind.Unspecified),
-                            CreatorUserId = 1,
-                            DistrictId = 1,
-                            FineTypeId = 1,
-                            NotificationDate = new DateTime(2026, 7, 9, 14, 0, 0, 0, DateTimeKind.Unspecified),
-                            ReceiptNumber = "TR-2026-001",
-                            Status = 4,
-                            VehicleId = 1,
-                            ViolationDate = new DateTime(2026, 7, 9, 12, 0, 0, 0, DateTimeKind.Unspecified),
-                            ViolationReason = "Kırmızı ışık kuralına uymamak",
-                            ViolatorName = "Ali Yılmaz",
-                            ViolatorTC = "11111111110"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Amount = 1506.00m,
-                            CityId = 2,
-                            CreatedAt = new DateTime(2026, 8, 3, 13, 0, 0, 0, DateTimeKind.Unspecified),
-                            CreatorUserId = 1,
-                            DistrictId = 4,
-                            FineTypeId = 2,
-                            NotificationDate = new DateTime(2026, 8, 3, 13, 0, 0, 0, DateTimeKind.Unspecified),
-                            ReceiptNumber = "TR-2026-002",
-                            Status = 5,
-                            VehicleId = 2,
-                            ViolationDate = new DateTime(2026, 8, 3, 12, 0, 0, 0, DateTimeKind.Unspecified),
-                            ViolationReason = "Hız sınırını %10'dan %30'a kadar aşmak",
-                            ViolatorName = "Ayşe Demir",
-                            ViolatorTC = "44444444440"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Amount = 1506.00m,
-                            CityId = 1,
-                            CreatedAt = new DateTime(2026, 8, 18, 12, 45, 0, 0, DateTimeKind.Unspecified),
-                            CreatorUserId = 1,
-                            DistrictId = 2,
-                            FineTypeId = 4,
-                            NotificationDate = new DateTime(2026, 8, 18, 12, 45, 0, 0, DateTimeKind.Unspecified),
-                            ReceiptNumber = "TR-2026-003",
-                            Status = 3,
-                            VehicleId = 1,
-                            ViolationDate = new DateTime(2026, 8, 18, 12, 0, 0, 0, DateTimeKind.Unspecified),
-                            ViolationReason = "Seyir halinde cep telefonu kullanmak",
-                            ViolatorName = "Ali Yılmaz",
-                            ViolatorTC = "11111111110"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Amount = 3135.00m,
-                            CityId = 2,
-                            CreatedAt = new DateTime(2026, 8, 23, 11, 0, 0, 0, DateTimeKind.Unspecified),
-                            CreatorUserId = 1,
-                            DistrictId = 5,
-                            FineTypeId = 3,
-                            NotificationDate = new DateTime(2026, 8, 23, 11, 0, 0, 0, DateTimeKind.Unspecified),
-                            ReceiptNumber = "TR-2026-004",
-                            Status = 1,
-                            VehicleId = 3,
-                            ViolationDate = new DateTime(2026, 8, 23, 10, 0, 0, 0, DateTimeKind.Unspecified),
-                            ViolationReason = "Hız sınırını %30'dan %50'ye kadar aşmak",
-                            ViolatorName = "Mehmet Demir",
-                            ViolatorTC = "33333333330"
-                        });
                 });
 
             modelBuilder.Entity("trafficFineManager.Entities.TrafficFineHistory", b =>
@@ -590,96 +432,6 @@ namespace trafficFineManager.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("TrafficFineHistories");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            ActionDate = new DateTime(2026, 7, 9, 14, 0, 0, 0, DateTimeKind.Unspecified),
-                            ActionType = 1,
-                            Description = "Ceza sisteme eklendi.",
-                            NewStatus = 1,
-                            OldStatus = 1,
-                            TrafficFineId = 1,
-                            UserId = 1
-                        },
-                        new
-                        {
-                            Id = 2,
-                            ActionDate = new DateTime(2026, 7, 10, 12, 0, 0, 0, DateTimeKind.Unspecified),
-                            ActionType = 2,
-                            Description = "Yönetici onayı verildi. Finans onayı bekleniyor.",
-                            NewStatus = 3,
-                            OldStatus = 1,
-                            TrafficFineId = 1,
-                            UserId = 2
-                        },
-                        new
-                        {
-                            Id = 3,
-                            ActionDate = new DateTime(2026, 7, 11, 12, 0, 0, 0, DateTimeKind.Unspecified),
-                            ActionType = 2,
-                            Description = "Finans onayı verildi. İşlem kesinleşti (Tamamlandı).",
-                            NewStatus = 4,
-                            OldStatus = 3,
-                            TrafficFineId = 1,
-                            UserId = 3
-                        },
-                        new
-                        {
-                            Id = 4,
-                            ActionDate = new DateTime(2026, 8, 3, 13, 0, 0, 0, DateTimeKind.Unspecified),
-                            ActionType = 1,
-                            Description = "Ceza sisteme eklendi.",
-                            NewStatus = 1,
-                            OldStatus = 1,
-                            TrafficFineId = 2,
-                            UserId = 1
-                        },
-                        new
-                        {
-                            Id = 5,
-                            ActionDate = new DateTime(2026, 8, 4, 12, 0, 0, 0, DateTimeKind.Unspecified),
-                            ActionType = 3,
-                            Description = "Plaka okunamıyor, kayıt reddedildi.",
-                            NewStatus = 5,
-                            OldStatus = 1,
-                            TrafficFineId = 2,
-                            UserId = 2
-                        },
-                        new
-                        {
-                            Id = 6,
-                            ActionDate = new DateTime(2026, 8, 18, 12, 45, 0, 0, DateTimeKind.Unspecified),
-                            ActionType = 1,
-                            Description = "Ceza sisteme eklendi.",
-                            NewStatus = 1,
-                            OldStatus = 1,
-                            TrafficFineId = 3,
-                            UserId = 1
-                        },
-                        new
-                        {
-                            Id = 7,
-                            ActionDate = new DateTime(2026, 8, 19, 12, 0, 0, 0, DateTimeKind.Unspecified),
-                            ActionType = 2,
-                            Description = "Yönetici onayı verildi. Finans onayı bekleniyor.",
-                            NewStatus = 3,
-                            OldStatus = 1,
-                            TrafficFineId = 3,
-                            UserId = 2
-                        },
-                        new
-                        {
-                            Id = 8,
-                            ActionDate = new DateTime(2026, 8, 23, 11, 0, 0, 0, DateTimeKind.Unspecified),
-                            ActionType = 1,
-                            Description = "Ceza sisteme eklendi.",
-                            NewStatus = 1,
-                            OldStatus = 1,
-                            TrafficFineId = 4,
-                            UserId = 1
-                        });
                 });
 
             modelBuilder.Entity("trafficFineManager.Entities.Vehicle", b =>
@@ -732,7 +484,7 @@ namespace trafficFineManager.Migrations
                             BrandId = 1,
                             IsActive = true,
                             ModelId = 1,
-                            OwnerName = "Ali Yılmaz",
+                            OwnerName = "Ahmet Yılmaz",
                             OwnerTC = "11111111110",
                             PlateNumber = "34ABC123",
                             VehicleType = 1
@@ -772,17 +524,6 @@ namespace trafficFineManager.Migrations
                     b.Navigation("Role");
                 });
 
-            modelBuilder.Entity("trafficFineManager.Entities.District", b =>
-                {
-                    b.HasOne("trafficFineManager.Entities.City", "City")
-                        .WithMany()
-                        .HasForeignKey("CityId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("City");
-                });
-
             modelBuilder.Entity("trafficFineManager.Entities.Model", b =>
                 {
                     b.HasOne("trafficFineManager.Entities.Brand", "Brand")
@@ -796,22 +537,10 @@ namespace trafficFineManager.Migrations
 
             modelBuilder.Entity("trafficFineManager.Entities.TrafficFine", b =>
                 {
-                    b.HasOne("trafficFineManager.Entities.City", "City")
-                        .WithMany()
-                        .HasForeignKey("CityId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.HasOne("trafficFineManager.Entities.AppUser", "CreatorUser")
                         .WithMany()
                         .HasForeignKey("CreatorUserId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("trafficFineManager.Entities.District", "District")
-                        .WithMany()
-                        .HasForeignKey("DistrictId")
-                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("trafficFineManager.Entities.FineType", "FineType")
@@ -826,11 +555,7 @@ namespace trafficFineManager.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("City");
-
                     b.Navigation("CreatorUser");
-
-                    b.Navigation("District");
 
                     b.Navigation("FineType");
 

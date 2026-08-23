@@ -26,54 +26,124 @@
     </div>
 </div>
 
-<!-- This div will hold the query results via AJAX or regular postback (for now, postback) -->
 @if (ViewBag.QueriedPlate != null)
 {
     <div class="row justify-content-center mt-5">
-        <div class="col-md-10">
-            <h4 class="mb-3"><strong>@ViewBag.QueriedPlate</strong> Plakalı Araç Ceza Geçmişi</h4>
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4><strong>@ViewBag.QueriedPlate</strong> Plakalı Araç Ceza Geçmişi</h4>
+                @if (ViewBag.VehicleInfo != null)
+                {
+                    <span class="badge bg-primary fs-6 p-2">🚗 @ViewBag.VehicleInfo</span>
+                }
+            </div>
             
             @if (ViewBag.Fines != null && ((List<trafficFineManager.Entities.TrafficFine>)ViewBag.Fines).Count > 0)
             {
-                <table class="table table-striped table-hover shadow-sm align-middle bg-white">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>Tarih</th>
-                            <th>Ceza Maddesi</th>
-                            <th>Sürücü</th>
-                            <th>Tutar</th>
-                            <th>Durum</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var fine in (List<trafficFineManager.Entities.TrafficFine>)ViewBag.Fines)
-                        {
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover shadow-sm align-middle bg-white">
+                        <thead class="table-dark">
                             <tr>
-                                <td>@fine.NotificationDate.ToString("dd.MM.yyyy HH:mm")</td>
-                                <td>
-                                    <span class="badge bg-secondary">@(fine.FineType?.ArticleNumber ?? "-")</span><br/>
-                                    <small>@fine.ViolationReason</small>
-                                </td>
-                                <td>@fine.ViolatorName <br/><small class="text-muted">TC: @fine.ViolatorTC</small></td>
-                                <td class="text-danger fw-bold">@fine.Amount.ToString("C")</td>
-                                <td>
-                                    @if (fine.Status == trafficFineManager.Entities.Enums.FineStatus.Tamamlandi)
-                                    {
-                                        <span class="badge bg-success">Onaylandı / Kesinleşti</span>
-                                    }
-                                    else if (fine.Status == trafficFineManager.Entities.Enums.FineStatus.Reddedildi)
-                                    {
-                                        <span class="badge bg-danger">İptal Edildi</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge bg-warning text-dark">İşlemde</span>
-                                    }
-                                </td>
+                                <th>Ceza Tarihi</th>
+                                <th>Ceza Saati</th>
+                                <th>Ceza Yeri</th>
+                                <th>Ceza Maddesi</th>
+                                <th>İhlal Nedeni</th>
+                                <th>Sürücü</th>
+                                <th>Ceza Tutarı</th>
+                                <th>Durum</th>
+                                <th>İşlem Geçmişi</th>
                             </tr>
-                        }
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            @foreach (var fine in (List<trafficFineManager.Entities.TrafficFine>)ViewBag.Fines)
+                            {
+                                <tr>
+                                    <td>@fine.ViolationDate.ToString("dd.MM.yyyy")</td>
+                                    <td>@fine.ViolationDate.ToString("HH:mm")</td>
+                                    <td>@fine.City?.Name / @fine.District?.Name</td>
+                                    <td><span class="badge bg-secondary">@(fine.FineType?.ArticleNumber ?? "-")</span></td>
+                                    <td><small>@fine.ViolationReason</small></td>
+                                    <td>@fine.ViolatorName</td>
+                                    <td class="text-danger fw-bold fs-5">@fine.Amount.ToString("N2") TL</td>
+                                    <td>
+                                        @if (fine.Status == trafficFineManager.Entities.Enums.FineStatus.Tamamlandi)
+                                        {
+                                            <span class="badge bg-success mb-1">Onaylandı / Kesinleşti</span>
+                                        }
+                                        else if (fine.Status == trafficFineManager.Entities.Enums.FineStatus.Reddedildi)
+                                        {
+                                            <span class="badge bg-danger mb-1">İptal Edildi (Reddedildi)</span>
+                                            var rejectLog = fine.Histories?.OrderByDescending(h => h.Id).FirstOrDefault(h => h.ActionType == trafficFineManager.Entities.Enums.ActionType.Reddedildi);
+                                            if (rejectLog != null)
+                                            {
+                                                <div class="text-danger small mt-1"><strong>Neden:</strong> @rejectLog.Description</div>
+                                            }
+                                        }
+                                        else if (fine.Status == trafficFineManager.Entities.Enums.FineStatus.FinansOnayinda)
+                                        {
+                                            <span class="badge bg-warning text-dark mb-1">Finans Onayı Bekleniyor</span>
+                                        }
+                                        else if (fine.Status == trafficFineManager.Entities.Enums.FineStatus.YoneticiOnayinda)
+                                        {
+                                            <span class="badge bg-warning text-dark mb-1">Finans Onayı Bekleniyor</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-info text-dark mb-1">Yönetici Onayı Bekleniyor</span>
+                                        }
+                                        <div class="mt-2 text-muted" style="font-size: 11px;">(Sisteme Giriş: @fine.NotificationDate.ToString("dd.MM.yyyy HH:mm"))</div>
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#historyModal-@fine.Id">
+                                            🔍 Ayrıntılar
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <div class="modal fade" id="historyModal-@fine.Id" tabindex="-1" aria-labelledby="historyModalLabel-@fine.Id" aria-hidden="true">
+                                  <div class="modal-dialog modal-lg">
+                                    <div class="modal-content">
+                                      <div class="modal-header bg-light">
+                                        <h5 class="modal-title" id="historyModalLabel-@fine.Id">Ceza İşlem Geçmişi (Makbuz: @(fine.ReceiptNumber ?? "-"))</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+                                      </div>
+                                      <div class="modal-body p-0">
+                                          @if(fine.Histories != null && fine.Histories.Any())
+                                          {
+                                              <ul class="list-group list-group-flush">
+                                                  @foreach(var history in fine.Histories.OrderBy(h => h.ActionDate))
+                                                  {
+                                                      <li class="list-group-item">
+                                                          <div class="d-flex w-100 justify-content-between">
+                                                              <h6 class="mb-1">
+                                                                  @if(history.ActionType == trafficFineManager.Entities.Enums.ActionType.Olusturuldu) { <span class="badge bg-primary">Oluşturuldu</span> }
+                                                                  else if(history.ActionType == trafficFineManager.Entities.Enums.ActionType.Guncellendi) { <span class="badge bg-warning text-dark">Güncellendi</span> }
+                                                                  else if(history.ActionType == trafficFineManager.Entities.Enums.ActionType.Onaylandi) { <span class="badge bg-success">Onaylandı</span> }
+                                                                  else if(history.ActionType == trafficFineManager.Entities.Enums.ActionType.Reddedildi) { <span class="badge bg-danger">Reddedildi</span> }
+                                                              </h6>
+                                                              <small class="text-muted">@history.ActionDate.ToString("dd.MM.yyyy HH:mm:ss")</small>
+                                                          </div>
+                                                          <p class="mb-1">@history.Description</p>
+                                                      </li>
+                                                  }
+                                              </ul>
+                                          }
+                                          else
+                                          {
+                                              <div class="p-4 text-center text-muted">İşlem geçmişi bulunamadı.</div>
+                                          }
+                                      </div>
+                                      <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                            }
+                        </tbody>
+                    </table>
+                </div>
             }
             else
             {
