@@ -7,6 +7,7 @@ namespace trafficFineManager.Services.Abstraction
     {
         Task CreateFineAsync(CreateTrafficFineViewModel model, int creatorUserId);
         Task<List<TrafficFine>> GetAllFinesAsync();
+        Task<List<TrafficFine>> GetFinesByUserIdAsync(int userId);
         Task ApproveFineAsync(int id, int userId);
         Task RejectFineAsync(RejectFineViewModel model, int userId);
         Task<List<TrafficFineHistory>> GetFineHistoryAsync(int trafficFineId);

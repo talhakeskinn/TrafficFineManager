@@ -1,0 +1,79 @@
+@model List<trafficFineManager.Entities.TrafficFine>
+
+@{
+    ViewData["Title"] = "Profil ve Geçmiş İşlemlerim";
+    var user = (trafficFineManager.Entities.AppUser)ViewBag.User;
+}
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-primary text-white fw-bold">
+                👤 Profil Bilgilerim
+            </div>
+            <div class="card-body">
+                <p><strong>Ad Soyad:</strong> @user.FirstName @user.LastName</p>
+                <p><strong>TC Kimlik No:</strong> @user.IdentityNumber</p>
+                <p><strong>Sicil No:</strong> @user.RegistrationNumber</p>
+                <p><strong>E-Posta:</strong> @user.Email</p>
+                <p><strong>Rol:</strong> @(user.Role.Name == "Memur" ? "Standart Kullanıcı" : user.Role.Name)</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-8">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-dark text-white fw-bold">
+                📜 Geçmişte Girdiğim Cezalar (@Model.Count Kayıt)
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover align-middle m-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Ceza Tarihi</th>
+                                <th>Plaka</th>
+                                <th>Tutar</th>
+                                <th>Durum</th>
+                                <th>İşlem</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if(!Model.Any()) {
+                                <tr><td colspan="5" class="text-center text-muted py-3">Henüz ceza kaydınız bulunmuyor.</td></tr>
+                            }
+                            @foreach (var fine in Model)
+                            {
+                                <tr>
+                                    <td>@fine.ViolationDate.ToString("dd.MM.yyyy")</td>
+                                    <td><strong>@fine.Vehicle.PlateNumber</strong></td>
+                                    <td class="text-danger fw-bold">@fine.Amount.ToString("N2") TL</td>
+                                    <td>
+                                        @if (fine.Status == trafficFineManager.Entities.Enums.FineStatus.Tamamlandi)
+                                        {
+                                            <span class="badge bg-success">Onaylandı</span>
+                                        }
+                                        else if (fine.Status == trafficFineManager.Entities.Enums.FineStatus.Reddedildi)
+                                        {
+                                            <span class="badge bg-danger">İptal Edildi</span>
+                                        }
+                                        else if (fine.Status == trafficFineManager.Entities.Enums.FineStatus.FinansOnayinda)
+                                        {
+                                            <span class="badge bg-warning text-dark">Finans Onayı Bekleniyor</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-info text-dark">Yönetici Onayı Bekleniyor</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <a asp-controller="Home" asp-action="Index" class="btn btn-sm btn-outline-primary">Ana Sayfada Gör</a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

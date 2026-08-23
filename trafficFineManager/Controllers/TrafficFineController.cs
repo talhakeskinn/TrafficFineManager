@@ -21,10 +21,71 @@ namespace trafficFineManager.Controllers
             _context = context;
         }
 
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
+        {
+            return RedirectToAction(nameof(List), new { filter = "all" });
+        }
+
+        [HttpGet]
+        [Authorize(Roles = "Yonetici, Finansman")]
+        public async Task<IActionResult> List(string filter = "all")
         {
             var fines = await _trafficFineService.GetAllFinesAsync();
-            return View(fines);
+            
+            ViewBag.CurrentFilter = filter;
+            ViewBag.ShowSidebar = true;
+
+            switch (filter)
+            {
+                case "yonetici_bekleyen":
+                    fines = fines.Where(f => f.Status == trafficFineManager.Entities.Enums.FineStatus.Yeni || f.Status == trafficFineManager.Entities.Enums.FineStatus.YoneticiOnayinda).ToList();
+                    ViewBag.FilterTitle = "Yönetici Onayı Bekleyen Cezalar";
+                    break;
+                case "finans_bekleyen":
+                    fines = fines.Where(f => f.Status == trafficFineManager.Entities.Enums.FineStatus.FinansOnayinda).ToList();
+                    ViewBag.FilterTitle = "Finans Onayı Bekleyen Cezalar";
+                    break;
+                case "reddedilen":
+                    fines = fines.Where(f => f.Status == trafficFineManager.Entities.Enums.FineStatus.Reddedildi).ToList();
+                    ViewBag.FilterTitle = "Reddedilen / İptal Edilen Cezalar";
+                    break;
+                case "onaylanan":
+                    fines = fines.Where(f => f.Status == trafficFineManager.Entities.Enums.FineStatus.Tamamlandi).ToList();
+                    ViewBag.FilterTitle = "Onaylanan ve Kesinleşen Cezalar";
+                    break;
+                default:
+                    ViewBag.FilterTitle = "Tüm Ceza İşlemleri";
+                    break;
+            }
+            
+            return View("Index", fines);
+        }
+
+        [HttpGet]
+        [Authorize(Roles = "Yonetici, Finansman")]
+        public async Task<IActionResult> MyApprovals()
+        {
+            int currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            var allFines = await _trafficFineService.GetAllFinesAsync();
+            
+            var myHistoryFines = allFines.Where(f => f.Histories.Any(h => h.UserId == currentUserId && 
+                (h.ActionType == trafficFineManager.Entities.Enums.ActionType.Onaylandi || 
+                 h.ActionType == trafficFineManager.Entities.Enums.ActionType.Reddedildi)))
+                .ToList();
+
+            ViewBag.FilterTitle = "Onay Geçmişim";
+            return View("Index", myHistoryFines);
+        }
+
+        [HttpGet]
+        [Authorize(Roles = "Yonetici")]
+        public async Task<IActionResult> MyCreatedFines()
+        {
+            int currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            var myFines = await _trafficFineService.GetFinesByUserIdAsync(currentUserId);
+            
+            ViewBag.FilterTitle = "Oluşturduğum Kayıtlar";
+            return View("Index", myFines);
         }
 
         [HttpGet]
@@ -65,7 +126,7 @@ namespace trafficFineManager.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Yonetici, Finans")]
+        [Authorize(Roles = "Yonetici, Finansman")]
         public async Task<IActionResult> Approve(int id)
         {
             int currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
@@ -74,7 +135,7 @@ namespace trafficFineManager.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Yonetici, Finans")]
+        [Authorize(Roles = "Yonetici, Finansman")]
         public async Task<IActionResult> Reject(RejectFineViewModel model)
         {
             if (!ModelState.IsValid)

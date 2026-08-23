@@ -1,123 +1,160 @@
 @model List<trafficFineManager.Entities.TrafficFine>
 
 @{
-    ViewData["Title"] = "Ceza Listesi";
+    ViewData["Title"] = ViewBag.FilterTitle ?? "Ceza Listesi";
+    bool showSidebar = ViewBag.ShowSidebar == true;
+    string currentFilter = ViewBag.CurrentFilter as string ?? "all";
 }
 
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2>Kesilen Trafik Cezaları</h2>
-        <a asp-action="Create" class="btn btn-success"> + Yeni Ceza Ekle</a>
+        <h2>@(ViewBag.FilterTitle ?? "Kesilen Trafik Cezaları")</h2>
     </div>
     <hr />
 
-    <table class="table table-striped table-hover shadow-sm align-middle">
-        <thead class="table-dark">
-            <tr>
-                <th>No</th>
-                <th>Araç & Sahibi</th>
-                <th>Ceza Yiyen Sürücü</th>
-                <th>İhlal (Madde No)</th>
-                <th>Tutar</th>
-                <th>Tarih</th>
-                <th>Durum</th>
-                <th>İşlemi Yapan</th>
-                <th>Aksiyonlar</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var fine in Model)
-            {
-                <tr>
-                    <td>@fine.Id</td>
-                    <td>
-                        <span class="fw-bold">@fine.Vehicle.PlateNumber</span><br/>
-                        <small class="text-muted">@fine.Vehicle.OwnerName</small>
-                    </td>
-                    <td>
-                        <span class="fw-bold">@fine.ViolatorName</span><br/>
-                        <small class="text-muted">TC: @fine.ViolatorTC</small>
-                    </td>
-                    <td>
-                        <span class="badge bg-secondary">@(fine.FineType?.ArticleNumber ?? "-")</span><br/>
-                        <small>@fine.ViolationReason</small>
-                    </td>
-                    <td class="text-danger fw-bold">@fine.Amount.ToString("C")</td>
-                    <td>@fine.NotificationDate.ToString("dd.MM.yyyy HH:mm")</td>
-                    <td>
-                        @if (fine.Status == trafficFineManager.Entities.Enums.FineStatus.Yeni)
-                        {
-                            <span class="badge bg-primary">@fine.Status</span>
-                        }
-                        else if (fine.Status == trafficFineManager.Entities.Enums.FineStatus.Tamamlandi)
-                        {
-                            <span class="badge bg-success">@fine.Status</span>
-                        }
-                        else if (fine.Status == trafficFineManager.Entities.Enums.FineStatus.Reddedildi)
-                        {
-                            <span class="badge bg-danger">@fine.Status</span>
-                        }
-                        else
-                        {
-                            <span class="badge bg-warning text-dark">@fine.Status</span>
-                        }
-                    </td>
-                    <td>@fine.CreatorUser.FirstName @fine.CreatorUser.LastName</td>
-                    <td>
-                        <div class="d-flex gap-2 align-items-center">
-                            <a asp-action="History" asp-route-id="@fine.Id" class="btn btn-sm btn-info text-white">
-                                🕒 Geçmiş
-                            </a>
+    <div class="row">
+        @if (showSidebar)
+        {
+            <div class="col-md-3 mb-4">
+                <div class="list-group shadow-sm">
+                    <a asp-action="List" asp-route-filter="all" class="list-group-item list-group-item-action @(currentFilter == "all" ? "active" : "")">
+                        🌐 Tüm İşlemler
+                    </a>
+                    <a asp-action="List" asp-route-filter="yonetici_bekleyen" class="list-group-item list-group-item-action @(currentFilter == "yonetici_bekleyen" ? "active" : "")">
+                        🕒 Yönetici Onayı Bekleyenler
+                    </a>
+                    <a asp-action="List" asp-route-filter="finans_bekleyen" class="list-group-item list-group-item-action @(currentFilter == "finans_bekleyen" ? "active" : "")">
+                        🕒 Finans Onayı Bekleyenler
+                    </a>
+                    <a asp-action="List" asp-route-filter="onaylanan" class="list-group-item list-group-item-action @(currentFilter == "onaylanan" ? "active text-white" : "text-success")">
+                        ✅ Onaylananlar
+                    </a>
+                    <a asp-action="List" asp-route-filter="reddedilen" class="list-group-item list-group-item-action @(currentFilter == "reddedilen" ? "active text-white" : "text-danger")">
+                        ❌ Reddedilenler
+                    </a>
+                </div>
+            </div>
+        }
 
-                            @if (fine.Status != trafficFineManager.Entities.Enums.FineStatus.Tamamlandi && fine.Status != trafficFineManager.Entities.Enums.FineStatus.Reddedildi)
-                            {
-                                <a asp-action="Edit" asp-route-id="@fine.Id" class="btn btn-sm btn-warning">
-                                    ✏️ Düzenle
-                                </a>
-
-                                @if (User.IsInRole("Yonetici") || User.IsInRole("Finans"))
-                                {
-                                    <form asp-action="Approve" method="post" class="m-0">
-                                        <input type="hidden" name="id" value="@fine.Id" />
-                                        <button type="submit" class="btn btn-sm btn-success">✔ Onayla</button>
-                                    </form>
-                                    <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#rejectModal-@fine.Id">
-                                        ✖ Reddet
-                                    </button>
-                                }
-                            }
-                        </div>
-
-                        <!-- Modal Bloğu -->
-                        @if (fine.Status != trafficFineManager.Entities.Enums.FineStatus.Tamamlandi && fine.Status != trafficFineManager.Entities.Enums.FineStatus.Reddedildi)
+        <div class="@(showSidebar ? "col-md-9" : "col-md-12")">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover shadow-sm align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>No</th>
+                            <th>Araç & Sahibi</th>
+                            <th>Ceza Yiyen Sürücü</th>
+                            <th>İhlal (Madde No)</th>
+                            <th>Tutar</th>
+                            <th>Tarih</th>
+                            <th>Durum</th>
+                            <th>İşlemi Yapan</th>
+                            <th>Aksiyonlar</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if(!Model.Any()) {
+                            <tr><td colspan="9" class="text-center text-muted py-3">Bu filtreye uygun ceza kaydı bulunmuyor.</td></tr>
+                        }
+                        @foreach (var fine in Model)
                         {
-                            <div class="modal fade" id="rejectModal-@fine.Id" tabindex="-1" aria-hidden="true">
-                                <div class="modal-dialog">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title">Cezayı Reddet</h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                        </div>
-                                        <form asp-action="Reject" method="post">
-                                            <div class="modal-body">
-                                                <input type="hidden" name="TrafficFineId" value="@fine.Id" />
-                                                <div class="form-group">
-                                                    <label class="fw-bold mb-2">Ret Nedeni:</label>
-                                                    <textarea name="RejectReason" class="form-control" rows="3" required></textarea>
+                            <tr>
+                                <td>@fine.Id</td>
+                                <td>
+                                    <span class="fw-bold">@fine.Vehicle.PlateNumber</span><br/>
+                                    <small class="text-muted">@fine.Vehicle.OwnerName</small>
+                                </td>
+                                <td>
+                                    <span class="fw-bold">@fine.ViolatorName</span><br/>
+                                    <small class="text-muted">TC: @fine.ViolatorTC</small>
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary">@(fine.FineType?.ArticleNumber ?? "-")</span><br/>
+                                    <small>@fine.ViolationReason</small>
+                                </td>
+                                <td class="text-danger fw-bold">@fine.Amount.ToString("N2") TL</td>
+                                <td>@fine.NotificationDate.ToString("dd.MM.yyyy HH:mm")</td>
+                                <td>
+                                    @if (fine.Status == trafficFineManager.Entities.Enums.FineStatus.Yeni)
+                                    {
+                                        <span class="badge bg-primary">Yönetici Onayı Bekliyor</span>
+                                    }
+                                    else if (fine.Status == trafficFineManager.Entities.Enums.FineStatus.Tamamlandi)
+                                    {
+                                        <span class="badge bg-success">Onaylandı</span>
+                                    }
+                                    else if (fine.Status == trafficFineManager.Entities.Enums.FineStatus.Reddedildi)
+                                    {
+                                        <span class="badge bg-danger">İptal Edildi</span>
+                                    }
+                                    else if (fine.Status == trafficFineManager.Entities.Enums.FineStatus.FinansOnayinda)
+                                    {
+                                        <span class="badge bg-warning text-dark">Finans Onayı Bekliyor</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">@fine.Status</span>
+                                    }
+                                </td>
+                                <td>@fine.CreatorUser.FirstName @fine.CreatorUser.LastName</td>
+                                <td>
+                                    <div class="d-flex gap-2 align-items-center">
+                                        <a asp-action="History" asp-route-id="@fine.Id" class="btn btn-sm btn-info text-white">
+                                            🕒 Geçmiş
+                                        </a>
+
+                                        @if (fine.Status != trafficFineManager.Entities.Enums.FineStatus.Tamamlandi && fine.Status != trafficFineManager.Entities.Enums.FineStatus.Reddedildi)
+                                        {
+                                            <a asp-action="Edit" asp-route-id="@fine.Id" class="btn btn-sm btn-warning">
+                                                ✏️ Düzenle
+                                            </a>
+
+                                            @if (User.IsInRole("Yonetici") || User.IsInRole("Finansman"))
+                                            {
+                                                <form asp-action="Approve" method="post" class="m-0">
+                                                    <input type="hidden" name="id" value="@fine.Id" />
+                                                    <button type="submit" class="btn btn-sm btn-success">✅ Onayla</button>
+                                                </form>
+                                                <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#rejectModal-@fine.Id">
+                                                    ❌ Reddet
+                                                </button>
+                                            }
+                                        }
+                                    </div>
+
+                                    <!-- Modal -->
+                                    @if (fine.Status != trafficFineManager.Entities.Enums.FineStatus.Tamamlandi && fine.Status != trafficFineManager.Entities.Enums.FineStatus.Reddedildi)
+                                    {
+                                        <div class="modal fade" id="rejectModal-@fine.Id" tabindex="-1" aria-hidden="true">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title">Cezayı Reddet</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                    </div>
+                                                    <form asp-action="Reject" method="post">
+                                                        <div class="modal-body">
+                                                            <input type="hidden" name="TrafficFineId" value="@fine.Id" />
+                                                            <div class="form-group">
+                                                                <label class="fw-bold mb-2">Ret Nedeni:</label>
+                                                                <textarea name="RejectReason" class="form-control" rows="3" required></textarea>
+                                                            </div>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
+                                                            <button type="submit" class="btn btn-danger">Cezayı İptal Et</button>
+                                                        </div>
+                                                    </form>
                                                 </div>
                                             </div>
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
-                                                <button type="submit" class="btn btn-danger">Cezayı İptal Et</button>
-                                            </div>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
+                                        </div>
+                                    }
+                                </td>
+                            </tr>
                         }
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 </div>

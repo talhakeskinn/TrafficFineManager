@@ -81,6 +81,26 @@ namespace trafficFineManager.Services
                     .ThenInclude(v => v.Brand) 
                 .Include(t => t.Vehicle)
                     .ThenInclude(v => v.Model) 
+                .Include(t => t.City)
+                .Include(t => t.District)
+                .Include(t => t.Histories)
+                .OrderByDescending(t => t.NotificationDate)
+                .ToListAsync();
+        }
+
+        public async Task<List<TrafficFine>> GetFinesByUserIdAsync(int userId)
+        {
+            return await _context.TrafficFines
+                .Include(t => t.CreatorUser)
+                .Include(t => t.FineType)
+                .Include(t => t.Vehicle)
+                    .ThenInclude(v => v.Brand) 
+                .Include(t => t.Vehicle)
+                    .ThenInclude(v => v.Model) 
+                .Include(t => t.City)
+                .Include(t => t.District)
+                .Include(t => t.Histories)
+                .Where(t => t.CreatorUserId == userId)
                 .OrderByDescending(t => t.NotificationDate)
                 .ToListAsync();
         }
