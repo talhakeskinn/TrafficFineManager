@@ -1,0 +1,51 @@
+﻿@model List<trafficFineManager.Entities.TrafficFineHistory>
+
+@{
+    ViewData["Title"] = "Ceza Geçmişi";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Ceza Geçmişi (ID: @ViewBag.TrafficFineId)</h2>
+        <a asp-action="Index" class="btn btn-secondary">⬅ Listeye Dön</a>
+    </div>
+    <hr />
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-warning">Bu cezaya ait herhangi bir geçmiş kaydı bulunamadı.</div>
+    }
+    else
+    {
+        <table class="table table-bordered table-striped shadow-sm align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>İşlem ID</th>
+                    <th>İşlemi Yapan</th>
+                    <th>İşlem Tipi</th>
+                    <th>Önceki Durum</th>
+                    <th>Yeni Durum</th>
+                    <th>Açıklama / Ret Nedeni</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.Id</td>
+                        <td class="fw-bold">
+                            <!-- Eğer User null değilse adını yazdır, yoksa "Bilinmiyor" yaz -->
+                            @(item.User != null ? $"{item.User.FirstName} {item.User.LastName}" : "Bilinmiyor")
+                        </td>
+                        <td>
+                            <span class="badge bg-info text-dark">@item.ActionType</span>
+                        </td>
+                        <td>@item.OldStatus</td>
+                        <td class="fw-bold">@item.NewStatus</td>
+                        <td>@item.Description</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>

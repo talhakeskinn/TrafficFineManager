@@ -1,0 +1,100 @@
+@model trafficFineManager.ViewModels.CreateTrafficFineViewModel
+
+@{
+    ViewData["Title"] = "Yeni Ceza Ekle";
+}
+
+<div class="container mt-4">
+    <h2>Yeni Trafik Cezası Ekle (Hızlı Giriş)</h2>
+    <hr />
+    <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+    <form asp-action="Create" method="post">
+        <div class="row">
+            <!-- ARAÇ BİLGİLERİ -->
+            <div class="col-md-6 border-end">
+                <h4 class="text-primary mb-3">🚗 Araç Bilgileri</h4>
+                
+                <div class="form-group mb-3">
+                    <label class="control-label fw-bold">Plaka</label>
+                    <input asp-for="PlateNumber" class="form-control text-uppercase" placeholder="Örn: 34ABC123" />
+                    <span asp-validation-for="PlateNumber" class="text-danger"></span>
+                    <small class="text-muted">Sistemde kayıtlıysa marka/model dikkate alınmadan plaka üzerinden işlem yapılır. Kayıtlı değilse yeni araç oluşturulur.</small>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label class="control-label fw-bold">Marka</label>
+                    <select asp-for="BrandId" class="form-select" asp-items="ViewBag.Brands">
+                        <option value="">-- Marka Seçin --</option>
+                    </select>
+                    <span asp-validation-for="BrandId" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label class="control-label fw-bold">Model</label>
+                    <select asp-for="ModelId" class="form-select" asp-items="ViewBag.Models">
+                        <option value="">-- Model Seçin --</option>
+                    </select>
+                    <span asp-validation-for="ModelId" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label class="control-label fw-bold">Araç Tipi</label>
+                    <select asp-for="VehicleType" class="form-select" asp-items="ViewBag.VehicleTypes">
+                        <option value="">-- Araç Tipi Seçin --</option>
+                    </select>
+                    <span asp-validation-for="VehicleType" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label class="control-label fw-bold">Araç Sahibi (Ruhsat Sahibi)</label>
+                    <input asp-for="OwnerName" class="form-control" placeholder="Örn: Ahmet Yılmaz" />
+                    <span asp-validation-for="OwnerName" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label class="control-label fw-bold">Araç Sahibi TC Kimlik No</label>
+                    <input asp-for="OwnerTC" class="form-control" placeholder="11 Haneli TC Kimlik No" maxlength="11" />
+                    <span asp-validation-for="OwnerTC" class="text-danger"></span>
+                </div>
+            </div>
+
+            <!-- CEZA VE SÜRÜCÜ BİLGİLERİ -->
+            <div class="col-md-6">
+                <h4 class="text-danger mb-3">🚨 Ceza ve Sürücü Bilgileri</h4>
+
+                <div class="form-group mb-3">
+                    <label class="control-label fw-bold">Ceza Maddesi</label>
+                    <select asp-for="FineTypeId" class="form-select" asp-items="ViewBag.FineTypes">
+                        <option value="">-- Ceza Maddesi Seçin --</option>
+                    </select>
+                    <span asp-validation-for="FineTypeId" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label class="control-label fw-bold">Cezayı Yiyen Sürücü Ad/Soyad</label>
+                    <input asp-for="ViolatorName" class="form-control" placeholder="Örn: Mehmet Demir" />
+                    <span asp-validation-for="ViolatorName" class="text-danger"></span>
+                    <small class="text-muted">Araç sahibi ile aynı kişiyse bile lütfen doldurunuz.</small>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label class="control-label fw-bold">Sürücü TC Kimlik No</label>
+                    <input asp-for="ViolatorTC" class="form-control" placeholder="11 Haneli TC Kimlik No" maxlength="11" />
+                    <span asp-validation-for="ViolatorTC" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label class="control-label fw-bold">Makbuz Numarası</label>
+                    <input asp-for="ReceiptNumber" class="form-control" placeholder="Örn: TR-2026-001" />
+                    <span asp-validation-for="ReceiptNumber" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mt-4 text-end">
+                    <a asp-action="Index" class="btn btn-secondary me-2">İptal</a>
+                    <button type="submit" class="btn btn-primary px-5">Cezayı Kaydet</button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>

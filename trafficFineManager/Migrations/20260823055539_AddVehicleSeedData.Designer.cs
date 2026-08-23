@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TrafficFineApp.Data;
 
@@ -11,9 +12,11 @@ using TrafficFineApp.Data;
 namespace trafficFineManager.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260823055539_AddVehicleSeedData")]
+    partial class AddVehicleSeedData
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -166,100 +169,6 @@ namespace trafficFineManager.Migrations
                         {
                             Id = 2,
                             Name = "Ford"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Name = "Fiat"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Name = "Toyota"
-                        },
-                        new
-                        {
-                            Id = 5,
-                            Name = "Volkswagen"
-                        });
-                });
-
-            modelBuilder.Entity("trafficFineManager.Entities.FineType", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("ArticleNumber")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(250)
-                        .HasColumnType("nvarchar(250)");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("FineTypes");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Amount = 1506m,
-                            ArticleNumber = "47/1-b",
-                            Description = "Kırmızı ışık kuralına uymamak",
-                            IsActive = true
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Amount = 1506m,
-                            ArticleNumber = "51/2-a",
-                            Description = "Hız sınırını %10 - %30 aşmak",
-                            IsActive = true
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Amount = 3135m,
-                            ArticleNumber = "51/2-b",
-                            Description = "Hız sınırını %30 - %50 aşmak",
-                            IsActive = true
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Amount = 6439m,
-                            ArticleNumber = "51/2-c",
-                            Description = "Hız sınırını %50'den fazla aşmak",
-                            IsActive = true
-                        },
-                        new
-                        {
-                            Id = 5,
-                            Amount = 690m,
-                            ArticleNumber = "78/1-a",
-                            Description = "Emniyet kemeri takmamak",
-                            IsActive = true
-                        },
-                        new
-                        {
-                            Id = 6,
-                            Amount = 1506m,
-                            ArticleNumber = "73/c",
-                            Description = "Seyir halinde cep telefonu kullanmak",
-                            IsActive = true
                         });
                 });
 
@@ -303,30 +212,6 @@ namespace trafficFineManager.Migrations
                             Id = 3,
                             BrandId = 2,
                             Name = "Transit"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            BrandId = 2,
-                            Name = "Focus"
-                        },
-                        new
-                        {
-                            Id = 5,
-                            BrandId = 3,
-                            Name = "Egea"
-                        },
-                        new
-                        {
-                            Id = 6,
-                            BrandId = 4,
-                            Name = "Corolla"
-                        },
-                        new
-                        {
-                            Id = 7,
-                            BrandId = 5,
-                            Name = "Passat"
                         });
                 });
 
@@ -347,9 +232,6 @@ namespace trafficFineManager.Migrations
                     b.Property<int>("CreatorUserId")
                         .HasColumnType("int");
 
-                    b.Property<int>("FineTypeId")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("NotificationDate")
                         .HasColumnType("datetime2");
 
@@ -368,21 +250,9 @@ namespace trafficFineManager.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
-                    b.Property<string>("ViolatorName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("ViolatorTC")
-                        .IsRequired()
-                        .HasMaxLength(11)
-                        .HasColumnType("nvarchar(11)");
-
                     b.HasKey("Id");
 
                     b.HasIndex("CreatorUserId");
-
-                    b.HasIndex("FineTypeId");
 
                     b.HasIndex("VehicleId");
 
@@ -445,16 +315,6 @@ namespace trafficFineManager.Migrations
                     b.Property<int>("ModelId")
                         .HasColumnType("int");
 
-                    b.Property<string>("OwnerName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("OwnerTC")
-                        .IsRequired()
-                        .HasMaxLength(11)
-                        .HasColumnType("nvarchar(11)");
-
                     b.Property<string>("PlateNumber")
                         .IsRequired()
                         .HasMaxLength(15)
@@ -478,10 +338,8 @@ namespace trafficFineManager.Migrations
                             BrandId = 1,
                             IsActive = true,
                             ModelId = 1,
-                            OwnerName = "Ahmet Yılmaz",
-                            OwnerTC = "11111111110",
                             PlateNumber = "34ABC123",
-                            VehicleType = 1
+                            VehicleType = 0
                         },
                         new
                         {
@@ -489,21 +347,8 @@ namespace trafficFineManager.Migrations
                             BrandId = 2,
                             IsActive = true,
                             ModelId = 3,
-                            OwnerName = "ABC Rent A Car",
-                            OwnerTC = "22222222220",
                             PlateNumber = "06XYZ987",
-                            VehicleType = 4
-                        },
-                        new
-                        {
-                            Id = 3,
-                            BrandId = 3,
-                            IsActive = true,
-                            ModelId = 5,
-                            OwnerName = "Mehmet Demir",
-                            OwnerTC = "33333333330",
-                            PlateNumber = "35DEF456",
-                            VehicleType = 1
+                            VehicleType = 0
                         });
                 });
 
@@ -537,12 +382,6 @@ namespace trafficFineManager.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("trafficFineManager.Entities.FineType", "FineType")
-                        .WithMany()
-                        .HasForeignKey("FineTypeId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.HasOne("trafficFineManager.Entities.Vehicle", "Vehicle")
                         .WithMany()
                         .HasForeignKey("VehicleId")
@@ -550,8 +389,6 @@ namespace trafficFineManager.Migrations
                         .IsRequired();
 
                     b.Navigation("CreatorUser");
-
-                    b.Navigation("FineType");
 
                     b.Navigation("Vehicle");
                 });

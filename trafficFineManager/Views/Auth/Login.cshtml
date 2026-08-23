@@ -1,0 +1,72 @@
+@model trafficFineManager.ViewModels.LoginViewModel
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Personel Girişi - Trafik Cezası Yönetim</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <style>
+        body {
+            background-color: #f8f9fa;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .login-card {
+            width: 100%;
+            max-width: 450px;
+            padding: 2.5rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            background: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <div class="text-center mb-4">
+            <h2 class="text-primary fw-bold">Personel Girişi</h2>
+            <p class="text-muted">Yetkili personel ekranına giriş yapın</p>
+        </div>
+
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+        <form asp-action="Login" method="post">
+            <div class="form-group mb-3">
+                <label asp-for="Username" class="fw-bold mb-1">Sicil No veya TC Kimlik No</label>
+                <input asp-for="Username" class="form-control form-control-lg" placeholder="Örn: S-001 veya 11111111111" />
+                <span asp-validation-for="Username" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-4">
+                <label asp-for="Password" class="fw-bold mb-1">Şifre</label>
+                <input asp-for="Password" class="form-control form-control-lg" placeholder="******" />
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-lg w-100">Sisteme Giriş Yap</button>
+        </form>
+
+        <div class="mt-4 text-center">
+            <a href="/" class="text-decoration-none">← Ceza Sorgulama Ekranına Dön</a>
+        </div>
+
+        <div class="mt-4 text-center bg-light p-3 rounded border">
+            <small class="text-muted"><strong>Test Bilgileri (Şifre: 123456):</strong><br />
+            <strong>S-001</strong> veya <strong>11111111111</strong> (Memur)<br />
+            <strong>S-002</strong> veya <strong>22222222222</strong> (Yönetici)<br />
+            <strong>S-003</strong> veya <strong>33333333333</strong> (Finans)</small>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
