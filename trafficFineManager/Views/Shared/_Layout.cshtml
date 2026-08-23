@@ -8,6 +8,69 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/trafficFineManager.styles.css" asp-append-version="true" />
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
+    <!-- SweetAlert2 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- Global Corporate Design -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+            font-weight: 400;
+            background-color: #f4f6f9 !important; /* Resmi, soluk gri arkaplan (ERP stili) */
+            color: #2c3e50;
+        }
+
+        /* Tüm Tablolar İçin Resmi ve Kenarlıklı Görünüm */
+        .table {
+            background-color: #ffffff;
+            border: 1px solid #c8ced3 !important;
+            font-size: 0.85rem;
+            margin-bottom: 0;
+        }
+        
+        .table th, .table td {
+            border: 1px solid #c8ced3 !important; /* Belirgin ızgara kenarlıkları */
+            vertical-align: middle;
+            padding: 0.5rem 0.75rem;
+        }
+
+        .table thead th {
+            background-color: #343a40 !important; /* Koyu, resmi antrasit renk */
+            color: #ffffff !important;
+            font-weight: 500 !important; /* Kalınlığı inceltildi */
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid #23272b !important;
+        }
+
+        /* Satır seçimi vurguları */
+        .table tbody tr:hover {
+            background-color: #f0f3f5 !important;
+        }
+
+        /* İnce yazı için özel düzeltmeler */
+        .fw-bold {
+            font-weight: 500 !important; /* Bold yazıları daha ince ve zarif yapar */
+        }
+
+        /* Kartların köşe yuvarlaklıklarını azaltarak resmiyeti artırma */
+        .card {
+            border-radius: 2px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border: 1px solid #c8ced3;
+        }
+        
+        .btn {
+            border-radius: 2px;
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -19,57 +82,12 @@
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        @if (User.Identity != null && User.Identity.IsAuthenticated)
-                        {
-                            @if (User.IsInRole("Yonetici") || User.IsInRole("Finansman"))
-                            {
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark fw-bold" asp-area="" asp-controller="TrafficFine" asp-action="List" asp-route-filter="all">📂 Tüm İşlemler</a>
-                                </li>
-                            }
-
-                            @if (User.IsInRole("Yonetici"))
-                            {
-                                <li class="nav-item">
-                                    <a class="nav-link text-warning fw-bold" asp-area="" asp-controller="TrafficFine" asp-action="List" asp-route-filter="yonetici_bekleyen">⏳ Onay Bekleyen İşlemlerim</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark fw-bold" asp-area="" asp-controller="TrafficFine" asp-action="Create">➕ Ceza Kaydı Oluştur</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link text-primary fw-bold" asp-area="" asp-controller="TrafficFine" asp-action="MyApprovals">📜 Onay Geçmişim</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link text-success fw-bold" asp-area="" asp-controller="TrafficFine" asp-action="MyCreatedFines">📝 Oluşturduğum Kayıtlar</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link text-secondary fw-bold" asp-area="" asp-controller="TrafficFine" asp-action="AuditLog">📋 Personel İşlem Logu</a>
-                                </li>
-                            }
-                            else if (User.IsInRole("Finansman"))
-                            {
-                                <li class="nav-item">
-                                    <a class="nav-link text-warning fw-bold" asp-area="" asp-controller="TrafficFine" asp-action="List" asp-route-filter="finans_bekleyen">⏳ Onay Bekleyen İşlemlerim</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link text-primary fw-bold" asp-area="" asp-controller="TrafficFine" asp-action="MyApprovals">📜 Onay Geçmişim</a>
-                                </li>
-                            }
-                            else if (User.IsInRole("Memur"))
-                            {
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark fw-bold" asp-area="" asp-controller="TrafficFine" asp-action="Create">➕ Ceza Kaydı Oluştur</a>
-                                </li>
-                            }
-                        }
-                    </ul>
-
+                    <!-- Main Navbar contains only Brand and User Profile -->
                     @if (User.Identity != null && User.Identity.IsAuthenticated)
                     {
                         var rawRole = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Role)?.Value;
                         var displayRole = rawRole == "Memur" ? "Standart Kullanıcı" : rawRole;
-                        <ul class="navbar-nav">
+                        <ul class="navbar-nav ms-auto">
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle text-primary fw-bold" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                     👤 @User.Identity.Name (@displayRole)
@@ -90,7 +108,7 @@
                     }
                     else
                     {
-                        <ul class="navbar-nav">
+                        <ul class="navbar-nav ms-auto">
                             <li class="nav-item">
                                 <a class="nav-link text-primary fw-bold" asp-controller="Auth" asp-action="Login">Giriş Yap</a>
                             </li>
@@ -99,6 +117,60 @@
                 </div>
             </div>
         </nav>
+
+        <!-- Sub Navbar for Actions -->
+        @if (User.Identity != null && User.Identity.IsAuthenticated)
+        {
+            <div class="bg-light border-bottom mb-4">
+                <div class="container-fluid">
+                    <ul class="nav nav-pills py-2 gap-2">
+                        <li class="nav-item">
+                            <a class="nav-link bg-white border text-dark fw-bold shadow-sm" asp-area="" asp-controller="Home" asp-action="Index"><i class="bi bi-speedometer2 text-muted me-1"></i> Dashboard</a>
+                        </li>
+                        @if (User.IsInRole("Yonetici") || User.IsInRole("Finansman"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link bg-white border text-dark fw-bold shadow-sm" asp-area="" asp-controller="TrafficFine" asp-action="List" asp-route-filter="all"><i class="bi bi-folder2-open text-muted me-1"></i> Bütün Kayıt Detayları</a>
+                            </li>
+                        }
+
+                        @if (User.IsInRole("Yonetici"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link bg-white border text-warning fw-bold shadow-sm" asp-area="" asp-controller="TrafficFine" asp-action="List" asp-route-filter="yonetici_bekleyen"><i class="bi bi-hourglass-split text-muted me-1"></i> Onay Bekleyen İşlemlerim</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link bg-white border text-dark fw-bold shadow-sm" asp-area="" asp-controller="TrafficFine" asp-action="Create"><i class="bi bi-plus-square text-muted me-1"></i> Ceza Kaydı Oluştur</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link bg-white border text-primary fw-bold shadow-sm" asp-area="" asp-controller="TrafficFine" asp-action="MyApprovals"><i class="bi bi-check2-circle text-muted me-1"></i> Onay Geçmişim</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link bg-white border text-success fw-bold shadow-sm" asp-area="" asp-controller="TrafficFine" asp-action="MyCreatedFines"><i class="bi bi-file-earmark-text text-muted me-1"></i> Oluşturduğum Kayıtlar</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link bg-white border text-secondary fw-bold shadow-sm" asp-area="" asp-controller="TrafficFine" asp-action="AuditLog"><i class="bi bi-clock-history text-muted me-1"></i> Personel İşlem Geçmişi</a>
+                            </li>
+                        }
+                        else if (User.IsInRole("Finansman"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link bg-white border text-warning fw-bold shadow-sm" asp-area="" asp-controller="TrafficFine" asp-action="List" asp-route-filter="finans_bekleyen"><i class="bi bi-hourglass-split text-muted me-1"></i> Onay Bekleyen İşlemlerim</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link bg-white border text-primary fw-bold shadow-sm" asp-area="" asp-controller="TrafficFine" asp-action="MyApprovals"><i class="bi bi-check2-circle text-muted me-1"></i> Onay Geçmişim</a>
+                            </li>
+                        }
+                        else if (User.IsInRole("Memur"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link bg-white border text-dark fw-bold shadow-sm" asp-area="" asp-controller="TrafficFine" asp-action="Create"><i class="bi bi-plus-square text-muted me-1"></i> Ceza Kaydı Oluştur</a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        }
     </header>
     <div class="container">
         <main role="main" class="pb-3">

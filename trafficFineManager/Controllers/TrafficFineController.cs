@@ -54,7 +54,7 @@ namespace trafficFineManager.Controllers
                     ViewBag.FilterTitle = "Onaylanan ve Kesinleşen Cezalar";
                     break;
                 default:
-                    ViewBag.FilterTitle = "Tüm Ceza İşlemleri";
+                    ViewBag.FilterTitle = "Bütün Kayıt Detayları";
                     break;
             }
             
@@ -100,7 +100,8 @@ namespace trafficFineManager.Controllers
         public async Task<IActionResult> Create()
         {
             await PopulateViewBagsAsync();
-            return View(new CreateTrafficFineViewModel());
+            var nextReceipt = await _trafficFineService.GenerateNextReceiptNumberAsync();
+            return View(new CreateTrafficFineViewModel { ReceiptNumber = nextReceipt });
         }
 
         [HttpPost]

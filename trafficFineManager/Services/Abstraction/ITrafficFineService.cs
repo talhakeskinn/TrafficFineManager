@@ -13,5 +13,6 @@ namespace trafficFineManager.Services.Abstraction
         Task<List<TrafficFineHistory>> GetFineHistoryAsync(int trafficFineId);
         Task<List<TrafficFineHistory>> GetAllHistoryAsync();
         Task UpdateFineAsync(EditTrafficFineViewModel model, int userId);
+        Task<string> GenerateNextReceiptNumberAsync();
     }
 }

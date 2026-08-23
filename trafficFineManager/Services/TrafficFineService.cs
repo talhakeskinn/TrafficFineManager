@@ -223,5 +223,12 @@ namespace trafficFineManager.Services
             _context.TrafficFineHistories.Add(history);
             await _context.SaveChangesAsync();
         }
+
+        public async Task<string> GenerateNextReceiptNumberAsync()
+        {
+            var latestFine = await _context.TrafficFines.OrderByDescending(f => f.Id).FirstOrDefaultAsync();
+            int nextId = (latestFine?.Id ?? 0) + 1;
+            return $"MKZ-{DateTime.Now.Year}-{nextId:D6}";
+        }
     }
 }
