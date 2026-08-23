@@ -22,6 +22,11 @@ namespace trafficFineManager.Controllers
         {
             if (User.Identity != null && User.Identity.IsAuthenticated)
             {
+                if (User.IsInRole("Memur"))
+                {
+                    return RedirectToAction("MyCreatedFines", "TrafficFine");
+                }
+
                 var fines = await _context.TrafficFines.ToListAsync();
                 int currentUserId = int.Parse(User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier)!);
 

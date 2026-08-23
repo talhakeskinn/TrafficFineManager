@@ -122,3 +122,64 @@
         </div>
     </form>
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        $(document).ready(function () {
+            // Function to load models
+            function loadModels(brandId, selectedModelId) {
+                var modelSelect = $('#ModelId');
+                modelSelect.empty();
+                modelSelect.append('<option value="">-- Model Seçin --</option>');
+                
+                if (brandId) {
+                    $.getJSON('/TrafficFine/GetModelsByBrand', { brandId: brandId }, function (data) {
+                        $.each(data, function (index, item) {
+                            var isSelected = (selectedModelId && item.value == selectedModelId) ? 'selected' : '';
+                            modelSelect.append('<option value="' + item.value + '" ' + isSelected + '>' + item.text + '</option>');
+                        });
+                    });
+                }
+            }
+
+            // Function to load districts
+            function loadDistricts(cityId, selectedDistrictId) {
+                var districtSelect = $('#DistrictId');
+                districtSelect.empty();
+                districtSelect.append('<option value="">-- İlçe Seçiniz --</option>');
+                
+                if (cityId) {
+                    $.getJSON('/TrafficFine/GetDistrictsByCity', { cityId: cityId }, function (data) {
+                        $.each(data, function (index, item) {
+                            var isSelected = (selectedDistrictId && item.value == selectedDistrictId) ? 'selected' : '';
+                            districtSelect.append('<option value="' + item.value + '" ' + isSelected + '>' + item.text + '</option>');
+                        });
+                    });
+                }
+            }
+
+            // Bind change events
+            $('#BrandId').change(function () {
+                loadModels($(this).val(), null);
+            });
+
+            $('#CityId').change(function () {
+                loadDistricts($(this).val(), null);
+            });
+            
+            // On initial load (Edit Mode), filter the dropdowns to only show relevant ones
+            var initialBrand = $('#BrandId').val();
+            var initialModel = $('#ModelId').val();
+            if(initialBrand) {
+                loadModels(initialBrand, initialModel);
+            }
+            
+            var initialCity = $('#CityId').val();
+            var initialDistrict = $('#DistrictId').val();
+            if(initialCity) {
+                loadDistricts(initialCity, initialDistrict);
+            }
+        });
+    </script>
+}

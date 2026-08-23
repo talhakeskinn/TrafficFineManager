@@ -78,7 +78,7 @@ namespace trafficFineManager.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "Yonetici")]
+        [Authorize(Roles = "Yonetici,Memur")]
         public async Task<IActionResult> MyCreatedFines()
         {
             int currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
@@ -150,6 +150,7 @@ namespace trafficFineManager.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "Yonetici,Memur")]
         public async Task<IActionResult> Edit(int id)
         {
             var fine = await _context.TrafficFines
@@ -174,7 +175,7 @@ namespace trafficFineManager.Controllers
                 ViolationDate = fine.ViolationDate,
                 CityId = fine.CityId,
                 DistrictId = fine.DistrictId,
-                ReceiptNumber = fine.ReceiptNumber 
+                ReceiptNumber = fine.ReceiptNumber
             };
 
             await PopulateViewBagsAsync();
@@ -182,6 +183,7 @@ namespace trafficFineManager.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Yonetici,Memur")]
         public async Task<IActionResult> Edit(EditTrafficFineViewModel model)
         {
             if (!ModelState.IsValid)
@@ -195,13 +197,51 @@ namespace trafficFineManager.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetModelsByBrand(int brandId)
+        {
+            var models = await _context.Models
+                .Where(m => m.BrandId == brandId)
+                .Select(m => new { value = m.Id, text = m.Name })
+                .ToListAsync();
+            return Json(models);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetVehicleByPlate(string plate)
+        {
+            if (string.IsNullOrWhiteSpace(plate)) return NotFound();
+            var vehicle = await _context.Vehicles
+                .FirstOrDefaultAsync(v => v.PlateNumber.ToUpper() == plate.ToUpper());
+            
+            if (vehicle == null) return NotFound();
+            
+            return Json(new {
+                brandId = vehicle.BrandId,
+                modelId = vehicle.ModelId,
+                vehicleType = (int)vehicle.VehicleType,
+                ownerName = vehicle.OwnerName,
+                ownerTC = vehicle.OwnerTC
+            });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetDistrictsByCity(int cityId)
+        {
+            var districts = await _context.Districts
+                .Where(d => d.CityId == cityId)
+                .Select(d => new { value = d.Id, text = d.Name })
+                .ToListAsync();
+            return Json(districts);
+        }
+
         private async Task PopulateViewBagsAsync()
         {
             var brands = await _context.Brands.ToListAsync();
             ViewBag.Brands = brands.Select(b => new SelectListItem { Value = b.Id.ToString(), Text = b.Name }).ToList();
 
-            var models = await _context.Models.ToListAsync();
-            ViewBag.Models = models.Select(m => new SelectListItem { Value = m.Id.ToString(), Text = m.Name }).ToList();
+            // Sadece seçili bir marka varsa modellerini yükleriz, aksi takdirde boş liste
+            ViewBag.Models = new List<SelectListItem>();
 
             var vehicleTypes = Enum.GetValues(typeof(trafficFineManager.Entities.Enums.VehicleType)).Cast<trafficFineManager.Entities.Enums.VehicleType>();
             ViewBag.VehicleTypes = vehicleTypes.Select(e => new SelectListItem { Value = ((int)e).ToString(), Text = e.ToString() }).ToList();
@@ -216,8 +256,8 @@ namespace trafficFineManager.Controllers
             var cities = await _context.Cities.ToListAsync();
             ViewBag.Cities = cities.Select(c => new SelectListItem { Value = c.Id.ToString(), Text = c.Name }).ToList();
 
-            var districts = await _context.Districts.ToListAsync();
-            ViewBag.Districts = districts.Select(d => new SelectListItem { Value = d.Id.ToString(), Text = d.Name }).ToList();
+            // District'leri (İlçeleri) sayfa ilk açıldığında BOMBOŞ gönderiyoruz. JavaScript ile dolacak.
+            ViewBag.Districts = new List<SelectListItem>();
         }
     }
 }

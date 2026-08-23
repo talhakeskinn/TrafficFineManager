@@ -76,7 +76,9 @@
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">trafficFineManager</a>
+                <a class="navbar-brand fw-bold" asp-area="" asp-controller="Home" asp-action="Index">
+                    <span class="text-dark" style="letter-spacing: -0.5px;">TrafficFine</span><span class="text-primary">Manager</span>
+                </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
@@ -90,27 +92,19 @@
                         <ul class="navbar-nav ms-auto">
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle text-primary fw-bold" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    👤 @User.Identity.Name (@displayRole)
+                                    <i class="bi bi-person-circle me-1"></i> @User.Identity.Name (@displayRole)
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                                     <li>
-                                        <a class="dropdown-item" asp-controller="User" asp-action="Profile">Profil & Geçmiş İşlemlerim</a>
+                                        <a class="dropdown-item" asp-controller="User" asp-action="Profile"><i class="bi bi-person-lines-fill me-2"></i> Profil & Geçmiş İşlemlerim</a>
                                     </li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li>
                                         <form asp-controller="Auth" asp-action="Logout" method="post" class="m-0 p-0">
-                                            <button type="submit" class="dropdown-item text-danger">Çıkış Yap</button>
+                                            <button type="submit" class="dropdown-item text-danger"><i class="bi bi-box-arrow-right me-2"></i> Çıkış Yap</button>
                                         </form>
                                     </li>
                                 </ul>
-                            </li>
-                        </ul>
-                    }
-                    else
-                    {
-                        <ul class="navbar-nav ms-auto">
-                            <li class="nav-item">
-                                <a class="nav-link text-primary fw-bold" asp-controller="Auth" asp-action="Login">Giriş Yap</a>
                             </li>
                         </ul>
                     }
@@ -124,9 +118,12 @@
             <div class="bg-light border-bottom mb-4">
                 <div class="container-fluid">
                     <ul class="nav nav-pills py-2 gap-2">
-                        <li class="nav-item">
-                            <a class="nav-link bg-white border text-dark fw-bold shadow-sm" asp-area="" asp-controller="Home" asp-action="Index"><i class="bi bi-speedometer2 text-muted me-1"></i> Dashboard</a>
-                        </li>
+                        @if (!User.IsInRole("Memur"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link bg-white border text-dark fw-bold shadow-sm" asp-area="" asp-controller="Home" asp-action="Index"><i class="bi bi-speedometer2 text-muted me-1"></i> Dashboard</a>
+                            </li>
+                        }
                         @if (User.IsInRole("Yonetici") || User.IsInRole("Finansman"))
                         {
                             <li class="nav-item">
@@ -164,6 +161,9 @@
                         else if (User.IsInRole("Memur"))
                         {
                             <li class="nav-item">
+                                <a class="nav-link bg-white border text-success fw-bold shadow-sm" asp-area="" asp-controller="TrafficFine" asp-action="MyCreatedFines"><i class="bi bi-file-earmark-text text-muted me-1"></i> Geçmiş Kayıtlarım</a>
+                            </li>
+                            <li class="nav-item">
                                 <a class="nav-link bg-white border text-dark fw-bold shadow-sm" asp-area="" asp-controller="TrafficFine" asp-action="Create"><i class="bi bi-plus-square text-muted me-1"></i> Ceza Kaydı Oluştur</a>
                             </li>
                         }
@@ -178,9 +178,9 @@
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - trafficFineManager - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+    <footer class="border-top footer text-muted bg-white mt-auto py-3">
+        <div class="container text-center">
+            <small class="fw-bold">TrafficFineManager</small> <small>&copy; 2026 - Tüm hakları saklıdır.</small>
         </div>
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>

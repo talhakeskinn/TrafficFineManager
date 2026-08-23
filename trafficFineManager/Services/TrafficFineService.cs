@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+ using Microsoft.EntityFrameworkCore;
 using TrafficFineApp.Data;
 using trafficFineManager.Entities;
 using trafficFineManager.Entities.Enums;

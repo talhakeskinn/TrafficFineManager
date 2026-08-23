@@ -7,7 +7,7 @@
 <div class="container-fluid mt-4">
     <div class="card shadow-sm border-0 rounded-3">
         <div class="card-header bg-dark text-white p-3">
-            <h5 class="mb-0">Ceza Kaydı Oluştur (Hızlı Giriş)</h5>
+            <h5 class="mb-0">Ceza Kaydı Oluştur</h5>
         </div>
         <div class="card-body p-4 bg-light">
             <div asp-validation-summary="All" class="text-danger mb-3 fw-bold"></div>
@@ -20,7 +20,7 @@
                         
                         <div class="form-group mb-3">
                             <label class="control-label fw-bold small text-muted">Plaka</label>
-                            <input asp-for="PlateNumber" class="form-control text-uppercase" placeholder="Örn: 34ABC123" />
+                            <input asp-for="PlateNumber" class="form-control text-uppercase font-monospace" placeholder="Örn: 34ABC123" maxlength="15" oninput="this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '')" />
                             <span asp-validation-for="PlateNumber" class="text-danger small"></span>
                             <small class="text-muted fst-italic">Sistemde kayıtlıysa plaka üzerinden eşleşir. Değilse yeni oluşturulur.</small>
                         </div>
@@ -51,13 +51,13 @@
 
                         <div class="form-group mb-3">
                             <label class="control-label fw-bold small text-muted">Araç Sahibi (Ruhsat Sahibi)</label>
-                            <input asp-for="OwnerName" class="form-control" placeholder="Ad Soyad veya Şirket Ünvanı" />
+                            <input asp-for="OwnerName" class="form-control" placeholder="Ad Soyad veya Şirket Ünvanı" oninput="this.value = this.value.replace(/[^a-zA-ZçÇğĞıİöÖşŞüÜ\s]/g, '')" />
                             <span asp-validation-for="OwnerName" class="text-danger small"></span>
                         </div>
 
                         <div class="form-group mb-3">
                             <label class="control-label fw-bold small text-muted">Araç Sahibi TC Kimlik No</label>
-                            <input asp-for="OwnerTC" class="form-control" placeholder="11 Haneli TC Kimlik No" maxlength="11" />
+                            <input asp-for="OwnerTC" class="form-control" placeholder="11 Haneli TC Kimlik No" maxlength="11" oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
                             <span asp-validation-for="OwnerTC" class="text-danger small"></span>
                         </div>
                     </div>
@@ -76,14 +76,14 @@
 
                         <div class="form-group mb-3">
                             <label class="control-label fw-bold small text-muted">Cezayı Yiyen Sürücü Ad/Soyad</label>
-                            <input asp-for="ViolatorName" class="form-control" placeholder="Ad Soyad" />
+                            <input asp-for="ViolatorName" class="form-control" placeholder="Ad Soyad" oninput="this.value = this.value.replace(/[^a-zA-ZçÇğĞıİöÖşŞüÜ\s]/g, '')" />
                             <span asp-validation-for="ViolatorName" class="text-danger small"></span>
                             <small class="text-muted fst-italic">Araç sahibi ile aynı kişi olsa da doldurulmalıdır.</small>
                         </div>
 
                         <div class="form-group mb-3">
                             <label class="control-label fw-bold small text-muted">Sürücü TC Kimlik No</label>
-                            <input asp-for="ViolatorTC" class="form-control" maxlength="11" placeholder="11 Haneli TC Kimlik No" />
+                            <input asp-for="ViolatorTC" class="form-control" maxlength="11" placeholder="11 Haneli TC Kimlik No" oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
                             <span asp-validation-for="ViolatorTC" class="text-danger small"></span>
                         </div>
 
@@ -120,10 +120,105 @@
                 
                 <hr class="mt-4" />
                 <div class="form-group mt-3 d-flex justify-content-end gap-2">
-                    <a asp-action="Index" class="btn btn-light border px-4">İptal</a>
                     <button type="submit" class="btn btn-primary px-5">Cezayı Kaydet</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        $(document).ready(function () {
+            // Function to load models
+            function loadModels(brandId, selectedModelId) {
+                var modelSelect = $('#ModelId');
+                modelSelect.empty();
+                modelSelect.append('<option value="">-- Model Seçin --</option>');
+                
+                if (brandId) {
+                    $.getJSON('/TrafficFine/GetModelsByBrand', { brandId: brandId }, function (data) {
+                        $.each(data, function (index, item) {
+                            var isSelected = (selectedModelId && item.value == selectedModelId) ? 'selected' : '';
+                            modelSelect.append('<option value="' + item.value + '" ' + isSelected + '>' + item.text + '</option>');
+                        });
+                    });
+                }
+            }
+
+            // Function to load districts
+            function loadDistricts(cityId, selectedDistrictId) {
+                var districtSelect = $('#DistrictId');
+                districtSelect.empty();
+                districtSelect.append('<option value="">-- İlçe Seçiniz --</option>');
+                
+                if (cityId) {
+                    $.getJSON('/TrafficFine/GetDistrictsByCity', { cityId: cityId }, function (data) {
+                        $.each(data, function (index, item) {
+                            var isSelected = (selectedDistrictId && item.value == selectedDistrictId) ? 'selected' : '';
+                            districtSelect.append('<option value="' + item.value + '" ' + isSelected + '>' + item.text + '</option>');
+                        });
+                    });
+                }
+            }
+
+            // Bind change events
+            $('#BrandId').change(function () {
+                loadModels($(this).val(), null);
+            });
+
+            $('#CityId').change(function () {
+                loadDistricts($(this).val(), null);
+            });
+            
+            // Auto-Fill Vehicle logic based on PlateNumber
+            $('#PlateNumber').blur(function() {
+                var plate = $(this).val();
+                if(plate.length >= 5) {
+                    $.getJSON('/TrafficFine/GetVehicleByPlate', { plate: plate })
+                        .done(function(data) {
+                            // Vehicle found! Lock fields and auto-fill
+                            $('#BrandId').val(data.brandId).change();
+                            
+                            // Wait for models to load then select the model
+                            setTimeout(function() {
+                                $('#ModelId').val(data.modelId);
+                                $('#ModelId').addClass('bg-light');
+                            }, 300);
+                            
+                            $('#VehicleType').val(data.vehicleType).addClass('bg-light');
+                            $('#OwnerName').val(data.ownerName).prop('readonly', true).addClass('bg-light');
+                            $('#OwnerTC').val(data.ownerTC).prop('readonly', true).addClass('bg-light');
+                            
+                            // Prevent dropdowns from being changed manually
+                            $('#BrandId').css('pointer-events','none').addClass('bg-light');
+                            $('#ModelId').css('pointer-events','none');
+                            $('#VehicleType').css('pointer-events','none');
+                        })
+                        .fail(function() {
+                            // Vehicle not found. Unlock fields for new entry
+                            $('#OwnerName').prop('readonly', false).removeClass('bg-light').val('');
+                            $('#OwnerTC').prop('readonly', false).removeClass('bg-light').val('');
+                            $('#BrandId').css('pointer-events','auto').removeClass('bg-light').val('');
+                            $('#ModelId').css('pointer-events','auto').removeClass('bg-light').empty().append('<option value="">-- Model Seçin --</option>');
+                            $('#VehicleType').css('pointer-events','auto').removeClass('bg-light').val('');
+                        });
+                }
+            });
+            
+            // On initial load (Create Mode with validation error), filter the dropdowns to only show relevant ones
+            var initialBrand = $('#BrandId').val();
+            var initialModel = $('#ModelId').val(); // ASP.NET Core sets this implicitly if Model state has it
+            if(initialBrand) {
+                loadModels(initialBrand, initialModel);
+            }
+            
+            var initialCity = $('#CityId').val();
+            var initialDistrict = $('#DistrictId').val();
+            if(initialCity) {
+                loadDistricts(initialCity, initialDistrict);
+            }
+        });
+    </script>
+}

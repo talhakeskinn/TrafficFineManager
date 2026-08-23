@@ -19,8 +19,9 @@
                             <th style="width: 15%;">Personel</th>
                             <th style="width: 10%;">Rolü</th>
                             <th style="width: 12%;">İşlem Tipi</th>
-                            <th style="width: 18%;">İlgili Plaka / Ceza ID</th>
-                            <th style="width: 30%;">Detay (Eski -> Yeni Durum)</th>
+                            <th style="width: 14%;">İlgili Plaka / Makbuz</th>
+                            <th style="width: 10%;">Araç Tipi</th>
+                            <th style="width: 24%;">Detay (Eski -> Yeni Durum)</th>
                         </tr>
                         <tr class="table-secondary text-dark">
                             <td class="p-1">
@@ -48,7 +49,15 @@
                                 </select>
                             </td>
                             <td class="p-1"><input type="text" class="form-control form-control-sm column-filter" data-col="4" placeholder="Plaka / Makbuz" /></td>
-                            <td class="p-1"><input type="text" class="form-control form-control-sm column-filter" data-col="5" placeholder="Detaylarda Ara" /></td>
+                            <td class="p-1">
+                                <select class="form-select form-select-sm column-select" data-col="5">
+                                    <option value="">Tümü</option>
+                                    @foreach(var type in Enum.GetValues(typeof(trafficFineManager.Entities.Enums.VehicleType)).Cast<trafficFineManager.Entities.Enums.VehicleType>()) {
+                                        <option value="@type">@type</option>
+                                    }
+                                </select>
+                            </td>
+                            <td class="p-1"><input type="text" class="form-control form-control-sm column-filter" data-col="6" placeholder="Detaylarda Ara" /></td>
                         </tr>
                     </thead>
                     <tbody id="auditTableBody">
@@ -82,6 +91,16 @@
                                 <td class="text-center">
                                     <span class="fw-bold">@(log.TrafficFine?.Vehicle?.PlateNumber ?? "Bilinmiyor")</span><br />
                                     <small class="text-muted">Makbuz: @(log.TrafficFine?.ReceiptNumber ?? "ID: " + log.TrafficFineId)</small>
+                                </td>
+                                <td class="text-center">
+                                    @if(log.TrafficFine?.Vehicle != null)
+                                    {
+                                        <span class="badge bg-light text-dark border">@log.TrafficFine.Vehicle.VehicleType.ToString()</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
                                 </td>
                                 <td>
                                     <small>@log.Description</small><br/>

@@ -1,54 +1,72 @@
 @model List<trafficFineManager.Entities.TrafficFine>
 
 @{
-    ViewData["Title"] = ViewBag.FilterTitle ?? "Ceza Listesi";
+    ViewData["Title"] = ViewBag.FilterTitle ?? "Bütün Kayıt Detayları";
     bool showSidebar = ViewBag.ShowSidebar == true; // We will use this to determine if we show the top filter bar
     string currentFilter = ViewBag.CurrentFilter as string ?? "all";
     
     // Determine button text based on filter
-    string filterBtnText = "🌐 Tüm İşlemler";
-    if(currentFilter == "yonetici_bekleyen") filterBtnText = "🕒 Yönetici Onayı Bekleyenler";
-    else if(currentFilter == "finans_bekleyen") filterBtnText = "🕒 Finans Onayı Bekleyenler";
-    else if(currentFilter == "onaylanan") filterBtnText = "✅ Onaylananlar";
-    else if(currentFilter == "reddedilen") filterBtnText = "❌ Reddedilenler";
+    string filterBtnText = "<i class=\"bi bi-folder2-open me-2\"></i> Tüm İşlemler";
+    if(currentFilter == "yonetici_bekleyen") filterBtnText = "<i class=\"bi bi-hourglass-split me-2 text-warning\"></i> Yönetici Onayı Bekleyenler";
+    else if(currentFilter == "finans_bekleyen") filterBtnText = "<i class=\"bi bi-hourglass-split me-2 text-warning\"></i> Finans Onayı Bekleyenler";
+    else if(currentFilter == "onaylanan") filterBtnText = "<i class=\"bi bi-check-circle me-2 text-success\"></i> Onaylananlar";
+    else if(currentFilter == "reddedilen") filterBtnText = "<i class=\"bi bi-x-circle me-2 text-danger\"></i> Reddedilenler";
 }
 
-<div class="container mt-4">
+<div class="container-fluid mt-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2>@(ViewBag.FilterTitle ?? "Kesilen Trafik Cezaları")</h2>
+        <h3 class="fw-bold text-dark"><i class="bi bi-card-list text-secondary me-2"></i> @(ViewBag.FilterTitle ?? "Kesilen Trafik Cezaları")</h3>
     </div>
-    @if (showSidebar)
+    <hr />
+
+    @if (User.IsInRole("Yonetici") || User.IsInRole("Finansman"))
     {
-        <!-- Horizontal Filter Bar above the table -->
-        <div class="card shadow-sm border-0 mb-3 bg-light">
+        <div class="card shadow-sm border-0 mb-4 bg-light">
             <div class="card-body py-2 d-flex justify-content-between align-items-center">
                 <!-- Dropdown on the Left -->
                 <div class="dropdown">
                     <button class="btn btn-white border bg-white dropdown-toggle fw-bold text-dark px-4 shadow-sm" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                        @filterBtnText
+                        @Html.Raw(filterBtnText)
                     </button>
                     <ul class="dropdown-menu shadow-sm" aria-labelledby="filterDropdown">
-                        <li><a class="dropdown-item @(currentFilter == "all" ? "active bg-primary" : "")" asp-action="List" asp-route-filter="all">🌐 Tüm İşlemler</a></li>
+                        <li><a class="dropdown-item @(currentFilter == "all" ? "active bg-primary" : "")" asp-action="List" asp-route-filter="all"><i class="bi bi-folder2-open me-2 text-secondary"></i> Tüm İşlemler</a></li>
                         <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item @(currentFilter == "yonetici_bekleyen" ? "active bg-primary" : "")" asp-action="List" asp-route-filter="yonetici_bekleyen">🕒 Yönetici Onayı Bekleyenler</a></li>
-                        <li><a class="dropdown-item @(currentFilter == "finans_bekleyen" ? "active bg-primary" : "")" asp-action="List" asp-route-filter="finans_bekleyen">🕒 Finans Onayı Bekleyenler</a></li>
+                        <li><a class="dropdown-item @(currentFilter == "yonetici_bekleyen" ? "active bg-primary" : "")" asp-action="List" asp-route-filter="yonetici_bekleyen"><i class="bi bi-hourglass-split me-2 text-warning"></i> Yönetici Onayı Bekleyenler</a></li>
+                        <li><a class="dropdown-item @(currentFilter == "finans_bekleyen" ? "active bg-primary" : "")" asp-action="List" asp-route-filter="finans_bekleyen"><i class="bi bi-hourglass-split me-2 text-warning"></i> Finans Onayı Bekleyenler</a></li>
                         <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item text-success @(currentFilter == "onaylanan" ? "active text-white bg-success" : "")" asp-action="List" asp-route-filter="onaylanan">✅ Onaylananlar</a></li>
-                        <li><a class="dropdown-item text-danger @(currentFilter == "reddedilen" ? "active text-white bg-danger" : "")" asp-action="List" asp-route-filter="reddedilen">❌ Reddedilenler</a></li>
+                        <li><a class="dropdown-item @(currentFilter == "onaylanan" ? "active bg-primary" : "")" asp-action="List" asp-route-filter="onaylanan"><i class="bi bi-check-circle me-2 text-success"></i> Onaylananlar</a></li>
+                        <li><a class="dropdown-item @(currentFilter == "reddedilen" ? "active bg-primary" : "")" asp-action="List" asp-route-filter="reddedilen"><i class="bi bi-x-circle me-2 text-danger"></i> Reddedilenler</a></li>
                     </ul>
                 </div>
-                
+
                 <!-- Action Toolbar on the Right -->
                 <div class="d-flex gap-2 align-items-center">
                     <span class="text-muted small me-2 fw-bold d-none d-md-inline">Seçili İşlem:</span>
-                    <button type="button" class="btn btn-sm btn-outline-info action-btn fw-bold" id="btnDetail" disabled>📄 Detay</button>
-                    <button type="button" class="btn btn-sm btn-outline-primary action-btn fw-bold" id="btnHistory" disabled>🕒 Geçmiş</button>
-                    <button type="button" class="btn btn-sm btn-outline-warning action-btn fw-bold" id="btnEdit" disabled>✏️ Düzenle</button>
+                    <button type="button" class="btn btn-sm btn-outline-info action-btn fw-bold" id="btnDetail" disabled><i class="bi bi-card-text me-1"></i> Detay</button>
+                    <button type="button" class="btn btn-sm btn-outline-primary action-btn fw-bold" id="btnHistory" disabled><i class="bi bi-clock-history me-1"></i> Geçmiş</button>
+                    @if (!User.IsInRole("Finansman"))
+                    {
+                        <button type="button" class="btn btn-sm btn-outline-warning action-btn fw-bold text-dark" id="btnEdit" disabled><i class="bi bi-pencil-square me-1"></i> Düzenle</button>
+                    }
                     @if (User.IsInRole("Yonetici") || User.IsInRole("Finansman"))
                     {
-                        <button type="button" class="btn btn-sm btn-outline-success action-btn fw-bold" id="btnApprove" disabled>✅ Onayla</button>
-                        <button type="button" class="btn btn-sm btn-outline-danger action-btn fw-bold" id="btnReject" disabled>❌ Reddet</button>
+                        <button type="button" class="btn btn-sm btn-outline-success action-btn fw-bold" id="btnApprove" disabled><i class="bi bi-check-lg me-1"></i> Onayla</button>
+                        <button type="button" class="btn btn-sm btn-outline-danger action-btn fw-bold" id="btnReject" disabled><i class="bi bi-x-lg me-1"></i> Reddet</button>
                     }
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <!-- Memur (Standart Kullanıcı) İçin Action Toolbar (Filtre Olmadan) -->
+        <div class="card shadow-sm border-0 mb-4 bg-light">
+            <div class="card-body py-2 d-flex justify-content-end align-items-center">
+                <div class="d-flex gap-2 align-items-center">
+                    <span class="text-muted small me-2 fw-bold d-none d-md-inline">Seçili İşlem:</span>
+                    <button type="button" class="btn btn-sm btn-outline-info action-btn fw-bold" id="btnDetail" disabled><i class="bi bi-card-text me-1"></i> Detay</button>
+                    <button type="button" class="btn btn-sm btn-outline-primary action-btn fw-bold" id="btnHistory" disabled><i class="bi bi-clock-history me-1"></i> Geçmiş</button>
+                    <button type="button" class="btn btn-sm btn-outline-warning action-btn fw-bold text-dark" id="btnEdit" disabled><i class="bi bi-pencil-square me-1"></i> Düzenle</button>
                 </div>
             </div>
         </div>
@@ -116,31 +134,40 @@
                         <tr>
                             <th style="width: 5%;">No</th>
                             <th style="width: 10%;">Plaka</th>
-                            <th style="width: 13%;">Araç Sahibi</th>
+                            <th style="width: 8%;">Araç Tipi</th>
+                            <th style="width: 12%;">Araç Sahibi</th>
                             <th style="width: 12%;">Sürücü</th>
-                            <th style="width: 8%;">İhlal Mad.</th>
-                            <th style="width: 12%;">Bölge</th>
+                            <th style="width: 7%;">İhlal Mad.</th>
+                            <th style="width: 10%;">Bölge</th>
                             <th style="width: 10%;">Ceza Tutarı</th>
-                            <th style="width: 14%;">Tarih</th>
+                            <th style="width: 10%;">Tarih</th>
                             <th style="width: 8%;">Durum</th>
                             <th style="width: 8%;">İşlemi Yapan</th>
                         </tr>
                         <tr class="table-secondary text-dark">
                             <td class="p-1"></td>
                             <td class="p-1"><input type="text" class="form-control form-control-sm column-filter" data-col="1" placeholder="Plaka" /></td>
-                            <td class="p-1"><input type="text" class="form-control form-control-sm column-filter" data-col="2" placeholder="Sahibi" /></td>
-                            <td class="p-1"><input type="text" class="form-control form-control-sm column-filter" data-col="3" placeholder="Sürücü" /></td>
                             <td class="p-1">
-                                <select class="form-select form-select-sm column-select" data-col="4">
+                                <select class="form-select form-select-sm column-select" data-col="2">
+                                    <option value="">Tümü</option>
+                                    @foreach(var type in Enum.GetValues(typeof(trafficFineManager.Entities.Enums.VehicleType)).Cast<trafficFineManager.Entities.Enums.VehicleType>()) {
+                                        <option value="@type">@type</option>
+                                    }
+                                </select>
+                            </td>
+                            <td class="p-1"><input type="text" class="form-control form-control-sm column-filter" data-col="3" placeholder="Sahibi" /></td>
+                            <td class="p-1"><input type="text" class="form-control form-control-sm column-filter" data-col="4" placeholder="Sürücü" /></td>
+                            <td class="p-1">
+                                <select class="form-select form-select-sm column-select" data-col="5">
                                     <option value="">Tümü</option>
                                     @foreach(var type in Model.Select(m => m.FineType?.ArticleNumber).Where(a => !string.IsNullOrEmpty(a)).Distinct()) {
                                         <option value="@type">@type</option>
                                     }
                                 </select>
                             </td>
-                            <td class="p-1"><input type="text" class="form-control form-control-sm column-filter" data-col="5" placeholder="İl/İlçe" /></td>
+                            <td class="p-1"><input type="text" class="form-control form-control-sm column-filter" data-col="6" placeholder="İl/İlçe" /></td>
                             <td class="p-1">
-                                <input type="text" class="form-control form-control-sm amount-filter" data-col="6" placeholder="Örn: 3.135" />
+                                <input type="text" class="form-control form-control-sm amount-filter" data-col="7" placeholder="Örn: 3.135" />
                             </td>
                             <td class="p-1">
                                 <div class="d-flex gap-1 justify-content-center">
@@ -149,14 +176,14 @@
                                 </div>
                             </td>
                             <td class="p-1">
-                                <select class="form-select form-select-sm column-select" data-col="8">
+                                <select class="form-select form-select-sm column-select" data-col="9">
                                     <option value="">Tümü</option>
                                     <option value="Bekliyor">Onay Bekleyenler</option>
                                     <option value="Onaylandı">Onaylandı</option>
                                     <option value="İptal Edildi">İptal Edildi</option>
                                 </select>
                             </td>
-                            <td class="p-1"><input type="text" class="form-control form-control-sm column-filter" data-col="9" placeholder="Personel" /></td>
+                            <td class="p-1"><input type="text" class="form-control form-control-sm column-filter" data-col="10" placeholder="Personel" /></td>
                         </tr>
                     </thead>
                     <tbody id="fineTableBody">
@@ -186,6 +213,7 @@
                                 
                                 <td class="text-center fw-bold">@fine.Id</td>
                                 <td class="fw-bold text-center">@fine.Vehicle.PlateNumber</td>
+                                <td class="text-center"><span class="badge bg-light text-dark border">@fine.Vehicle.VehicleType.ToString()</span></td>
                                 <td>@fine.Vehicle.OwnerName</td>
                                 <td>
                                     <span class="fw-bold">@fine.ViolatorName</span><br/>
@@ -242,12 +270,12 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header bg-dark text-white">
-                <h5 class="modal-title">📄 Ceza Kaydı Detayları</h5>
+                <h5 class="modal-title"><i class="bi bi-file-earmark-text me-2"></i> Ceza Kaydı Detayları</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-4">
                 <div class="row g-3">
-                    <div class="col-12"><h6 class="border-bottom pb-1 mb-2 text-primary fw-bold">🚗 Araç & Sahip Bilgileri</h6></div>
+                    <div class="col-12"><h6 class="border-bottom pb-1 mb-2 text-primary fw-bold"><i class="bi bi-car-front me-2"></i> Araç & Sahip Bilgileri</h6></div>
                     <div class="col-md-3">
                         <label class="text-muted small mb-1">Araç Plakası</label>
                         <h6 class="fw-bold" id="detPlate">-</h6>
@@ -318,12 +346,12 @@
 </div>
 
 <!-- Global Reject Modal -->
-<div class="modal fade" id="globalRejectModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="globalRejectModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">❌ Cezayı Reddet</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title"><i class="bi bi-x-circle me-2"></i> Cezayı Reddet</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <form asp-action="Reject" method="post">
                 <div class="modal-body">
@@ -438,12 +466,12 @@
                     if (colIdx === 0) { 
                         return (parseInt(cellA) - parseInt(cellB)) * sortDir;
                     }
-                    if (colIdx === 6) { 
+                    if (colIdx === 7) { 
                         var numA = parseFloat(cellA.replace(/\./g, '').replace(',', '.').replace(/[^\d.-]/g, '')) || 0;
                         var numB = parseFloat(cellB.replace(/\./g, '').replace(',', '.').replace(/[^\d.-]/g, '')) || 0;
                         return (numA - numB) * sortDir;
                     }
-                    if (colIdx === 7) { 
+                    if (colIdx === 8) { 
                         var dateA = $(a).find("td").eq(colIdx).data("date") || "";
                         var dateB = $(b).find("td").eq(colIdx).data("date") || "";
                         return dateA.localeCompare(dateB) * sortDir;
@@ -483,12 +511,12 @@
                     });
 
                     if (showRow && amountVal) {
-                        var cellAmountText = row.find("td").eq(6).text().toLowerCase().replace(/\./g, '').replace(/\s/g, ''); 
+                        var cellAmountText = row.find("td").eq(7).text().toLowerCase().replace(/\./g, '').replace(/\s/g, ''); 
                         if (cellAmountText.indexOf(amountVal) === -1) showRow = false;
                     }
 
                     if (showRow && (minDate || maxDate)) {
-                        var cellDateStr = row.find("td").eq(7).data("date"); 
+                        var cellDateStr = row.find("td").eq(8).data("date"); 
                         if (cellDateStr) {
                             var cellDate = new Date(cellDateStr);
                             if (minDate && cellDate < new Date(minDate)) showRow = false;
