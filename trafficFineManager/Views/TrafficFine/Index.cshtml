@@ -1,4 +1,4 @@
-@model List<trafficFineManager.Entities.TrafficFine>
+﻿@model List<trafficFineManager.Entities.TrafficFine>
 
 @{
     ViewData["Title"] = ViewBag.FilterTitle ?? "Bütün Kayıt Detayları";
@@ -59,7 +59,7 @@
     }
     else
     {
-        <!-- Memur (Standart Kullanıcı) İçin Action Toolbar (Filtre Olmadan) -->
+        <!-- Standart Kullanıcı İçin Action Toolbar (Filtre Olmadan) -->
         <div class="card shadow-sm border-0 mb-4 bg-light">
             <div class="card-body py-2 d-flex justify-content-end align-items-center">
                 <div class="d-flex gap-2 align-items-center">
@@ -197,7 +197,7 @@
                                 data-plate="@fine.Vehicle.PlateNumber" 
                                 data-owner="@fine.Vehicle.OwnerName"
                                 data-driver="@fine.ViolatorName"
-                                data-tc="@fine.ViolatorTC"
+                                data-tc="@(User.IsInRole("Yonetici") ? fine.ViolatorTC : "***")"
                                 data-article="@(fine.FineType?.ArticleNumber ?? "-")"
                                 data-reason="@fine.ViolationReason"
                                 data-amount="@fine.Amount.ToString("N2") TL"
@@ -209,7 +209,7 @@
                                 data-vehicle-brand="@(fine.Vehicle.Brand?.Name ?? "-") @(fine.Vehicle.Model?.Name ?? "-")"
                                 data-vehicle-type="@fine.Vehicle.VehicleType.ToString()"
                                 data-vehicle-active="@(fine.Vehicle.IsActive ? "✅ Aktif (Kullanımda)" : "❌ Pasif (Kullanım Dışı)")"
-                                data-owner-tc="@fine.Vehicle.OwnerTC">
+                                data-owner-tc="@(User.IsInRole("Yonetici") ? fine.Vehicle.OwnerTC : "***")">
                                 
                                 <td class="text-center fw-bold">@fine.Id</td>
                                 <td class="fw-bold text-center">@fine.Vehicle.PlateNumber</td>
@@ -603,3 +603,4 @@
         });
     </script>
 }
+

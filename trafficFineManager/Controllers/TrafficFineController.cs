@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using TrafficFineApp.Data;
@@ -78,7 +78,7 @@ namespace trafficFineManager.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "Yonetici,Memur")]
+        [Authorize(Roles = "Yonetici,StandartKullanici")]
         public async Task<IActionResult> MyCreatedFines()
         {
             int currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
@@ -115,6 +115,7 @@ namespace trafficFineManager.Controllers
 
             int currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
             await _trafficFineService.CreateFineAsync(model, currentUserId);
+            TempData["SuccessMessage"] = "Trafik cezası başarıyla oluşturuldu.";
             return RedirectToAction(nameof(Index));
         }
 
@@ -132,6 +133,7 @@ namespace trafficFineManager.Controllers
         {
             int currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
             await _trafficFineService.ApproveFineAsync(id, currentUserId);
+            TempData["SuccessMessage"] = "Ceza başarıyla onaylandı.";
             return RedirectToAction("Index");
         }
 
@@ -141,16 +143,18 @@ namespace trafficFineManager.Controllers
         {
             if (!ModelState.IsValid)
             {
+                TempData["ErrorMessage"] = "Ret nedeni boş bırakılamaz.";
                 return RedirectToAction("Index");
             }
 
             int currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
             await _trafficFineService.RejectFineAsync(model, currentUserId);
+            TempData["SuccessMessage"] = "Ceza reddedildi.";
             return RedirectToAction("Index");
         }
 
         [HttpGet]
-        [Authorize(Roles = "Yonetici,Memur")]
+        [Authorize(Roles = "Yonetici,StandartKullanici")]
         public async Task<IActionResult> Edit(int id)
         {
             var fine = await _context.TrafficFines
@@ -183,7 +187,7 @@ namespace trafficFineManager.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Yonetici,Memur")]
+        [Authorize(Roles = "Yonetici,StandartKullanici")]
         public async Task<IActionResult> Edit(EditTrafficFineViewModel model)
         {
             if (!ModelState.IsValid)
@@ -194,6 +198,7 @@ namespace trafficFineManager.Controllers
             
             int currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
             await _trafficFineService.UpdateFineAsync(model, currentUserId);
+            TempData["SuccessMessage"] = "Ceza başarıyla güncellendi.";
             return RedirectToAction(nameof(Index));
         }
 
@@ -261,3 +266,4 @@ namespace trafficFineManager.Controllers
         }
     }
 }
+

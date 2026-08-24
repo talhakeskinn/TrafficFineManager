@@ -1,0 +1,122 @@
+﻿@model trafficFineManager.Entities.Vehicle
+@{
+    ViewData["Title"] = "Yeni Araç Ekle";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="bi bi-car-front"></i> Yeni Araç Tanımla</h4>
+            </div>
+            <div class="card-body">
+                <form asp-action="Create">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="PlateNumber" class="control-label fw-bold small text-muted">Plaka</label>
+                            <input asp-for="PlateNumber" class="form-control text-uppercase" placeholder="Örn: 34ABC123" oninput="this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');" />
+                            <span asp-validation-for="PlateNumber" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="VehicleType" class="control-label fw-bold small text-muted">Araç Tipi</label>
+                            <select asp-for="VehicleType" class="form-select" asp-items="ViewBag.VehicleTypes">
+                                <option value="">-- Araç Tipi Seçiniz --</option>
+                            </select>
+                            <span asp-validation-for="VehicleType" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="BrandId" class="control-label fw-bold small text-muted">Marka</label>
+                            <select asp-for="BrandId" class="form-select" asp-items="ViewBag.Brands">
+                                <option value="">-- Marka Seçiniz --</option>
+                            </select>
+                            <span asp-validation-for="BrandId" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="ModelId" class="control-label fw-bold small text-muted">Model</label>
+                            <select asp-for="ModelId" class="form-select" asp-items="ViewBag.Models">
+                                <option value="">-- Önce Marka Seçiniz --</option>
+                            </select>
+                            <span asp-validation-for="ModelId" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="OwnerName" class="control-label fw-bold small text-muted">Ruhsat Sahibi Ad Soyad</label>
+                            <input asp-for="OwnerName" class="form-control" oninput="this.value = this.value.replace(/[0-9]/g, '');" />
+                            <span asp-validation-for="OwnerName" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="OwnerTC" class="control-label fw-bold small text-muted">Ruhsat Sahibi TC/VKN</label>
+                            <input asp-for="OwnerTC" class="form-control" maxlength="11" oninput="this.value = this.value.replace(/[^0-9]/g, '');" />
+                            <span asp-validation-for="OwnerTC" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-4">
+                        <a asp-action="Index" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left"></i> Listeye Dön
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> Aracı Kaydet
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <!-- Select2 CSS & JS -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+
+            // Make BrandId, ModelId searchable
+            $('#BrandId, #ModelId').select2({
+                theme: 'bootstrap-5',
+                width: '100%'
+            });
+
+            // Function to load models
+            function loadModels(brandId, selectedModelId) {
+                var modelSelect = $('#ModelId');
+                modelSelect.empty();
+                modelSelect.append('<option value="">-- Önce Marka Seçiniz --</option>');
+                
+                if (brandId) {
+                    $.getJSON('/TrafficFine/GetModelsByBrand', { brandId: brandId }, function (data) {
+                        $.each(data, function (index, item) {
+                            var isSelected = (selectedModelId && item.value == selectedModelId) ? 'selected' : '';
+                            modelSelect.append('<option value="' + item.value + '" ' + isSelected + '>' + item.text + '</option>');
+                        });
+                        modelSelect.trigger('change');
+                    });
+                } else {
+                    modelSelect.trigger('change');
+                }
+            }
+
+            $('#BrandId').change(function () {
+                loadModels($(this).val(), null);
+            });
+
+            var initialBrand = $('#BrandId').val();
+            var initialModel = $('#ModelId').val();
+            if(initialBrand) {
+                loadModels(initialBrand, initialModel);
+            }
+        });
+    </script>
+}

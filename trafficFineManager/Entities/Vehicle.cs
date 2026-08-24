@@ -24,5 +24,7 @@ namespace trafficFineManager.Entities
         public string OwnerTC { get; set; } = null!;
 
         public bool IsActive { get; set; } = true;
+
+        public ICollection<TrafficFine> TrafficFines { get; set; } = new List<TrafficFine>();
     }
 }

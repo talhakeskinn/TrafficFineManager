@@ -1,0 +1,113 @@
+﻿@model trafficFineManager.Entities.Vehicle
+@{
+    ViewData["Title"] = "Araç Detayı";
+}
+
+<div class="row">
+    <!-- Araç Bilgileri -->
+    <div class="col-md-4">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-dark text-white">
+                <h5 class="mb-0"><i class="bi bi-info-circle"></i> Araç Bilgileri</h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <div class="border rounded p-3 bg-light d-inline-block">
+                        <h2 class="mb-0 fw-bold">@Model.PlateNumber</h2>
+                    </div>
+                </div>
+                
+                <table class="table table-sm">
+                    <tr>
+                        <th class="text-muted">Marka/Model</th>
+                        <td class="text-end fw-bold">@Model.Brand.Name / @Model.Model.Name</td>
+                    </tr>
+                    <tr>
+                        <th class="text-muted">Araç Tipi</th>
+                        <td class="text-end fw-bold">@Model.VehicleType</td>
+                    </tr>
+                    <tr>
+                        <th class="text-muted">Ruhsat Sahibi</th>
+                        <td class="text-end fw-bold">@Model.OwnerName</td>
+                    </tr>
+                    <tr>
+                        <th class="text-muted">TC / VKN</th>
+                        <td class="text-end fw-bold">@Model.OwnerTC</td>
+                    </tr>
+                    <tr>
+                        <th class="text-muted">Durum</th>
+                        <td class="text-end">
+                            @if(Model.IsActive) {
+                                <span class="badge bg-success">Aktif</span>
+                            } else {
+                                <span class="badge bg-danger">Pasif</span>
+                            }
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ceza Geçmişi -->
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-file-earmark-text"></i> Aracın Ceza Geçmişi</h5>
+                <span class="badge bg-light text-danger rounded-pill">Toplam: @Model.TrafficFines.Count ceza</span>
+            </div>
+            <div class="card-body p-0">
+                @if (Model.TrafficFines.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Makbuz No</th>
+                                    <th>Tarih</th>
+                                    <th>İhlal Bölgesi</th>
+                                    <th>Ceza Tipi</th>
+                                    <th>Tutar</th>
+                                    <th>Durum</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var fine in Model.TrafficFines.OrderByDescending(f => f.ViolationDate))
+                                {
+                                    <tr>
+                                        <td><strong>@fine.ReceiptNumber</strong></td>
+                                        <td>@fine.ViolationDate.ToString("dd.MM.yyyy HH:mm")</td>
+                                        <td>@fine.City.Name / @fine.District.Name</td>
+                                        <td title="@fine.FineType.Description">@fine.FineType.ArticleNumber</td>
+                                        <td class="fw-bold text-danger">@fine.Amount.ToString("N2") ₺</td>
+                                        <td>
+                                            @if(fine.Status == trafficFineManager.Entities.Enums.FineStatus.Tamamlandi) {
+                                                <span class="badge bg-success">Tahsil Edildi</span>
+                                            } else if(fine.Status == trafficFineManager.Entities.Enums.FineStatus.Reddedildi) {
+                                                <span class="badge bg-danger">İptal/Ret</span>
+                                            } else {
+                                                <span class="badge bg-warning text-dark">Süreçte</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="p-5 text-center text-muted">
+                        <i class="bi bi-check-circle display-4 text-success mb-3"></i>
+                        <h5>Bu araca ait hiçbir trafik cezası bulunmuyor.</h5>
+                        <p>Harika bir sürücü!</p>
+                    </div>
+                }
+            </div>
+        </div>
+        
+        <div class="mt-4">
+            <a asp-action="Index" class="btn btn-secondary">Listeye Dön</a>
+        </div>
+    </div>
+</div>

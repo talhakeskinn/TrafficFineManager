@@ -1,4 +1,4 @@
-@model List<trafficFineManager.Entities.TrafficFine>
+﻿@model List<trafficFineManager.Entities.TrafficFine>
 
 @{
     ViewData["Title"] = "Profil ve Geçmiş İşlemlerim";
@@ -16,7 +16,7 @@
                 <p><strong>TC Kimlik No:</strong> @user.IdentityNumber</p>
                 <p><strong>Sicil No:</strong> @user.RegistrationNumber</p>
                 <p><strong>E-Posta:</strong> @user.Email</p>
-                <p><strong>Rol:</strong> @(user.Role.Name == "Memur" ? "Standart Kullanıcı" : user.Role.Name)</p>
+                <p><strong>Rol:</strong> @(user.Role.Name == "StandartKullanici" ? "Standart Kullanıcı" : user.Role.Name)</p>
             </div>
         </div>
     </div>
@@ -77,3 +77,4 @@
         </div>
     </div>
 </div>
+

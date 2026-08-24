@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -11,6 +11,9 @@
     
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <!-- SweetAlert2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css" rel="stylesheet">
     
     <!-- SweetAlert2 -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
@@ -88,7 +91,7 @@
                     @if (User.Identity != null && User.Identity.IsAuthenticated)
                     {
                         var rawRole = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Role)?.Value;
-                        var displayRole = rawRole == "Memur" ? "Standart Kullanıcı" : rawRole;
+                        var displayRole = rawRole == "StandartKullanici" ? "Standart Kullanıcı" : rawRole;
                         <ul class="navbar-nav ms-auto">
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle text-primary fw-bold" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -118,7 +121,7 @@
             <div class="bg-light border-bottom mb-4">
                 <div class="container-fluid">
                     <ul class="nav nav-pills py-2 gap-2">
-                        @if (!User.IsInRole("Memur"))
+                        @if (!User.IsInRole("StandartKullanici"))
                         {
                             <li class="nav-item">
                                 <a class="nav-link bg-white border text-dark fw-bold shadow-sm" asp-area="" asp-controller="Home" asp-action="Index"><i class="bi bi-speedometer2 text-muted me-1"></i> Dashboard</a>
@@ -158,7 +161,7 @@
                                 <a class="nav-link bg-white border text-primary fw-bold shadow-sm" asp-area="" asp-controller="TrafficFine" asp-action="MyApprovals"><i class="bi bi-check2-circle text-muted me-1"></i> Onay Geçmişim</a>
                             </li>
                         }
-                        else if (User.IsInRole("Memur"))
+                        else if (User.IsInRole("StandartKullanici"))
                         {
                             <li class="nav-item">
                                 <a class="nav-link bg-white border text-success fw-bold shadow-sm" asp-area="" asp-controller="TrafficFine" asp-action="MyCreatedFines"><i class="bi bi-file-earmark-text text-muted me-1"></i> Geçmiş Kayıtlarım</a>
@@ -187,5 +190,35 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
+
+    <!-- SweetAlert2 TempData Notifications -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <script>
+            Swal.fire({
+                title: 'Başarılı!',
+                text: '@Html.Raw(TempData["SuccessMessage"])',
+                icon: 'success',
+                timer: 3000,
+                timerProgressBar: true,
+                showConfirmButton: false,
+                toast: true,
+                position: 'top-end'
+            });
+        </script>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <script>
+            Swal.fire({
+                title: 'Hata!',
+                text: '@Html.Raw(TempData["ErrorMessage"])',
+                icon: 'error',
+                confirmButtonText: 'Tamam'
+            });
+        </script>
+    }
 </body>
 </html>
+

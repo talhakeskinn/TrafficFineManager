@@ -1,4 +1,4 @@
-using FluentValidation;
+﻿using FluentValidation;
 using trafficFineManager.ViewModels;
 using TrafficFineApp.Data;
 using Microsoft.EntityFrameworkCore;
@@ -17,16 +17,16 @@ namespace trafficFineManager.Validators
             RuleFor(x => x.PlateNumber)
                 .NotEmpty().WithMessage("Araç plakası zorunludur !")
                 .Matches(@"^(0[1-9]|[1-7][0-9]|8[01])[a-zA-Z]{1,3}\d{2,4}$").WithMessage("Lütfen geçerli bir Türkiye plakası giriniz (Örn: 34ABC123).")
-                .MustAsync(async (model, plate, cancellation) =>
+                .Must((model, plate) =>
                 {
                     // 1. KURAL: Mükerrer Kayıt (Aynı plaka, aynı tarih, aynı ceza maddesi) - Kendi ID'si hariç
-                    bool exists = await _context.TrafficFines
+                    bool exists = _context.TrafficFines
                         .Include(t => t.Vehicle)
-                        .AnyAsync(t => 
+                        .Any(t => 
                             t.Id != model.Id &&
                             t.Vehicle.PlateNumber == plate &&
                             t.ViolationDate == model.ViolationDate &&
-                            t.FineTypeId == model.FineTypeId, cancellation);
+                            t.FineTypeId == model.FineTypeId);
                     
                     return !exists;
                 }).WithMessage("MÜKERRER KAYIT: Bu araca aynı tarih ve saatte bu ceza maddesinden zaten başka bir kayıt açılmış!");
@@ -58,10 +58,10 @@ namespace trafficFineManager.Validators
             
             RuleFor(x => x.FineTypeId)
                 .GreaterThan(0).WithMessage("Lütfen bir ceza maddesi seçiniz.")
-                .MustAsync(async (model, fineTypeId, cancellation) =>
+                .Must((model, fineTypeId) =>
                 {
                     // 2. KURAL: Araç Tipi ve Ceza Maddesi Uyumu
-                    var fineType = await _context.FineTypes.FindAsync(new object[] { fineTypeId }, cancellation);
+                    var fineType = _context.FineTypes.Find(fineTypeId);
                     if (fineType != null)
                     {
                         var desc = fineType.Description.ToLower();
@@ -80,3 +80,5 @@ namespace trafficFineManager.Validators
         }
     }
 }
+
+

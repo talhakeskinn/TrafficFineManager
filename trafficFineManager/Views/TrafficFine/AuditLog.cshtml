@@ -1,4 +1,4 @@
-@model List<trafficFineManager.Entities.TrafficFineHistory>
+﻿@model List<trafficFineManager.Entities.TrafficFineHistory>
 
 @{
     ViewData["Title"] = "Personel İşlem Geçmişi";
@@ -69,7 +69,7 @@
                             <tr class="row-selectable">
                                 <td class="text-center" data-date="@log.ActionDate.ToString("yyyy-MM-dd")">@log.ActionDate.ToString("dd.MM.yyyy HH:mm:ss")</td>
                                 <td class="fw-bold">@log.User.FirstName @log.User.LastName</td>
-                                <td class="text-center"><span class="badge bg-info text-dark">@(log.User.Role.Name == "Memur" ? "Standart Kullanıcı" : log.User.Role.Name)</span></td>
+                                <td class="text-center"><span class="badge bg-info text-dark">@(log.User.Role.Name == "StandartKullanici" ? "Standart Kullanıcı" : log.User.Role.Name)</span></td>
                                 <td class="text-center">
                                     @if (log.ActionType == trafficFineManager.Entities.Enums.ActionType.Olusturuldu)
                                     {
@@ -272,3 +272,4 @@
         });
     </script>
 }
+

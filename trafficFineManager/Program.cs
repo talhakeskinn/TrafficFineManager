@@ -1,4 +1,4 @@
-using FluentValidation;
+﻿using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
@@ -51,6 +51,9 @@ app.MapControllerRoute(
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+    // 🚀 OTO-KURULUM: Uygulama başlarken veritabanı yoksa oluşturur ve migration'ları uygular.
+    context.Database.Migrate();
     
     // Seed Cities if not completely seeded
     if (context.Cities.Count() < 81)
@@ -135,6 +138,205 @@ using (var scope = app.Services.CreateScope())
             context.SaveChanges();
         }
     }
+
+    // Seed Brands and Models from arac_listesi.json
+    // We check if we have less than 150 brands (there are ~180 in total usually). 
+    // This allows continuing if seeding was interrupted.
+    if (context.Brands.Count() < 150)
+    {
+        var jsonPath = Path.Combine(Directory.GetCurrentDirectory(), "Data", "SeedData", "arac_listesi.json");
+        if (System.IO.File.Exists(jsonPath))
+        {
+            var jsonString = System.IO.File.ReadAllText(jsonPath);
+            using var doc = System.Text.Json.JsonDocument.Parse(jsonString);
+            
+            foreach (var brandProperty in doc.RootElement.EnumerateObject())
+            {
+                var bName = brandProperty.Name.Length > 50 ? brandProperty.Name.Substring(0, 50) : brandProperty.Name;
+                
+                var brand = context.Brands.FirstOrDefault(b => b.Name == bName);
+                if (brand == null)
+                {
+                    brand = new trafficFineManager.Entities.Brand { Name = bName };
+                    context.Brands.Add(brand);
+                    context.SaveChanges(); // Get ID
+                }
+                
+                var existingModelNames = context.Models.Where(m => m.BrandId == brand.Id).Select(m => m.Name).ToList();
+                var modelsToAdd = new System.Collections.Generic.List<trafficFineManager.Entities.Model>();
+                
+                foreach (var modelProperty in brandProperty.Value.EnumerateObject())
+                {
+                    var mName = modelProperty.Name.Length > 50 ? modelProperty.Name.Substring(0, 50) : modelProperty.Name;
+                    if (!existingModelNames.Contains(mName))
+                    {
+                        modelsToAdd.Add(new trafficFineManager.Entities.Model { Name = mName, BrandId = brand.Id });
+                        existingModelNames.Add(mName);
+                    }
+                }
+                
+                if (modelsToAdd.Any())
+                {
+                    context.Models.AddRange(modelsToAdd);
+                    context.SaveChanges();
+                }
+            }
+        }
+    }
+
+    // Dynamic Seeding for Vehicles and TrafficFines
+    if (context.Vehicles.Count() < 5)
+    {
+        var random = new Random();
+        var brands = context.Brands.ToList();
+        var models = context.Models.ToList();
+        var cities = context.Cities.ToList();
+        var districts = context.Districts.ToList();
+        var fineTypes = context.FineTypes.ToList();
+
+        if (brands.Any() && models.Any() && cities.Any() && districts.Any() && fineTypes.Any())
+        {
+            var vehicles = new List<trafficFineManager.Entities.Vehicle>();
+            for (int i = 1; i <= 10; i++)
+            {
+                var rBrand = brands[random.Next(brands.Count)];
+                var bModels = models.Where(m => m.BrandId == rBrand.Id).ToList();
+                if(!bModels.Any()) continue;
+                var rModel = bModels[random.Next(bModels.Count)];
+
+                var v = new trafficFineManager.Entities.Vehicle
+                {
+                    BrandId = rBrand.Id,
+                    ModelId = rModel.Id,
+                    PlateNumber = $"34ABC{100 + i}",
+                    VehicleType = trafficFineManager.Entities.Enums.VehicleType.Binek,
+                    OwnerName = $"Test Sahibi {i}",
+                    OwnerTC = $"111111111{i:00}",
+                    IsActive = true
+                };
+                context.Vehicles.Add(v);
+                vehicles.Add(v);
+            }
+            context.SaveChanges();
+
+            // Seed Fines
+            var pastDate = DateTime.Now.AddDays(-30);
+            var fines = new List<trafficFineManager.Entities.TrafficFine>();
+            var fineStatuses = new[] 
+            {
+                trafficFineManager.Entities.Enums.FineStatus.Yeni,
+                trafficFineManager.Entities.Enums.FineStatus.Yeni,
+                trafficFineManager.Entities.Enums.FineStatus.YoneticiOnayinda,
+                trafficFineManager.Entities.Enums.FineStatus.YoneticiOnayinda,
+                trafficFineManager.Entities.Enums.FineStatus.FinansOnayinda,
+                trafficFineManager.Entities.Enums.FineStatus.FinansOnayinda,
+                trafficFineManager.Entities.Enums.FineStatus.Reddedildi,
+                trafficFineManager.Entities.Enums.FineStatus.Tamamlandi,
+                trafficFineManager.Entities.Enums.FineStatus.Tamamlandi,
+                trafficFineManager.Entities.Enums.FineStatus.Tamamlandi
+            };
+
+            for (int i = 0; i < 20; i++)
+            {
+                var v = vehicles[random.Next(vehicles.Count)];
+                var fType = fineTypes[random.Next(fineTypes.Count)];
+                var c = cities[random.Next(cities.Count)];
+                var d = districts.Where(x => x.CityId == c.Id).FirstOrDefault() ?? districts.First();
+                var status = fineStatuses[i % fineStatuses.Length];
+
+                var fine = new trafficFineManager.Entities.TrafficFine
+                {
+                    VehicleId = v.Id,
+                    FineTypeId = fType.Id,
+                    ViolatorName = $"Sürücü {i}",
+                    ViolatorTC = $"999999999{i:00}",
+                    CityId = c.Id,
+                    DistrictId = d.Id,
+                    ViolationReason = fType.Description,
+                    Amount = fType.Amount,
+                    ViolationDate = pastDate.AddDays(i),
+                    NotificationDate = pastDate.AddDays(i).AddHours(1),
+                    CreatedAt = pastDate.AddDays(i).AddHours(1),
+                    Status = status,
+                    ReceiptNumber = $"TR-2026-1{i:00}",
+                    CreatorUserId = 1
+                };
+                context.TrafficFines.Add(fine);
+                fines.Add(fine);
+            }
+            context.SaveChanges();
+
+            foreach(var f in fines)
+            {
+                context.TrafficFineHistories.Add(new trafficFineManager.Entities.TrafficFineHistory
+                {
+                    TrafficFineId = f.Id,
+                    UserId = 1,
+                    ActionType = trafficFineManager.Entities.Enums.ActionType.Olusturuldu,
+                    OldStatus = trafficFineManager.Entities.Enums.FineStatus.Yeni,
+                    NewStatus = trafficFineManager.Entities.Enums.FineStatus.Yeni,
+                    Description = "Sisteme eklendi.",
+                    ActionDate = f.CreatedAt
+                });
+
+                if (f.Status >= trafficFineManager.Entities.Enums.FineStatus.YoneticiOnayinda)
+                {
+                    context.TrafficFineHistories.Add(new trafficFineManager.Entities.TrafficFineHistory
+                    {
+                        TrafficFineId = f.Id,
+                        UserId = 2,
+                        ActionType = trafficFineManager.Entities.Enums.ActionType.Onaylandi,
+                        OldStatus = trafficFineManager.Entities.Enums.FineStatus.Yeni,
+                        NewStatus = trafficFineManager.Entities.Enums.FineStatus.YoneticiOnayinda,
+                        Description = "Yönetici onayı verildi.",
+                        ActionDate = f.CreatedAt.AddHours(2)
+                    });
+                }
+                if (f.Status >= trafficFineManager.Entities.Enums.FineStatus.FinansOnayinda && f.Status != trafficFineManager.Entities.Enums.FineStatus.Reddedildi)
+                {
+                    context.TrafficFineHistories.Add(new trafficFineManager.Entities.TrafficFineHistory
+                    {
+                        TrafficFineId = f.Id,
+                        UserId = 3,
+                        ActionType = trafficFineManager.Entities.Enums.ActionType.Onaylandi,
+                        OldStatus = trafficFineManager.Entities.Enums.FineStatus.YoneticiOnayinda,
+                        NewStatus = trafficFineManager.Entities.Enums.FineStatus.FinansOnayinda,
+                        Description = "Finans onayı verildi.",
+                        ActionDate = f.CreatedAt.AddHours(4)
+                    });
+                }
+                if (f.Status == trafficFineManager.Entities.Enums.FineStatus.Tamamlandi)
+                {
+                    context.TrafficFineHistories.Add(new trafficFineManager.Entities.TrafficFineHistory
+                    {
+                        TrafficFineId = f.Id,
+                        UserId = 3,
+                        ActionType = trafficFineManager.Entities.Enums.ActionType.Onaylandi,
+                        OldStatus = trafficFineManager.Entities.Enums.FineStatus.FinansOnayinda,
+                        NewStatus = trafficFineManager.Entities.Enums.FineStatus.Tamamlandi,
+                        Description = "Tahsilat gerçekleşti. Kapatıldı.",
+                        ActionDate = f.CreatedAt.AddDays(1)
+                    });
+                }
+                if (f.Status == trafficFineManager.Entities.Enums.FineStatus.Reddedildi)
+                {
+                    context.TrafficFineHistories.Add(new trafficFineManager.Entities.TrafficFineHistory
+                    {
+                        TrafficFineId = f.Id,
+                        UserId = 2,
+                        ActionType = trafficFineManager.Entities.Enums.ActionType.Reddedildi,
+                        OldStatus = trafficFineManager.Entities.Enums.FineStatus.Yeni,
+                        NewStatus = trafficFineManager.Entities.Enums.FineStatus.Reddedildi,
+                        Description = "Plaka okunamıyor, reddedildi.",
+                        ActionDate = f.CreatedAt.AddHours(2)
+                    });
+                }
+            }
+            context.SaveChanges();
+        }
+    }
 }
 
 app.Run();
+
+

@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
 using System.Security.Claims;
@@ -22,7 +22,7 @@ namespace trafficFineManager.Controllers
         {
             if (User.Identity != null && User.Identity.IsAuthenticated)
             {
-                if (User.IsInRole("Memur"))
+                if (User.IsInRole("StandartKullanici"))
                 {
                     return RedirectToAction("MyCreatedFines", "TrafficFine");
                 }
@@ -49,7 +49,7 @@ namespace trafficFineManager.Controllers
                 }
                 else
                 {
-                    vm.UserRole = "Memur";
+                    vm.UserRole = "StandartKullanici";
                     var pendings = fines.Where(f => f.CreatorUserId == currentUserId && (f.Status != trafficFineManager.Entities.Enums.FineStatus.Tamamlandi && f.Status != trafficFineManager.Entities.Enums.FineStatus.Reddedildi)).ToList();
                     vm.PendingCount = pendings.Count;
                     vm.PendingTotalAmount = pendings.Sum(x => x.Amount);
@@ -149,3 +149,4 @@ namespace trafficFineManager.Controllers
         }
     }
 }
+
