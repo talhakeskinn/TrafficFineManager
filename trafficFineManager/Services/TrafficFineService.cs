@@ -1,4 +1,4 @@
- using Microsoft.EntityFrameworkCore;
+﻿ using Microsoft.EntityFrameworkCore;
 using TrafficFineApp.Data;
 using trafficFineManager.Entities;
 using trafficFineManager.Entities.Enums;
@@ -127,7 +127,7 @@ namespace trafficFineManager.Services
             }
             else
             {
-                // Unhandled role or state mismatch
+
                 return;
             }
 

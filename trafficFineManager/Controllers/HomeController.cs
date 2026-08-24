@@ -53,39 +53,32 @@ namespace trafficFineManager.Controllers
                     var pendings = fines.Where(f => f.CreatorUserId == currentUserId && (f.Status != trafficFineManager.Entities.Enums.FineStatus.Tamamlandi && f.Status != trafficFineManager.Entities.Enums.FineStatus.Reddedildi)).ToList();
                     vm.PendingCount = pendings.Count;
                     vm.PendingTotalAmount = pendings.Sum(x => x.Amount);
-                    
-                    // Filter fines to only this user's fines for the rest of the stats
+
                     fines = fines.Where(f => f.CreatorUserId == currentUserId).ToList();
                 }
 
-                // Genel İstatistikler
                 vm.TotalCount = fines.Count;
                 var approvedFines = fines.Where(f => f.Status == trafficFineManager.Entities.Enums.FineStatus.Tamamlandi).ToList();
                 vm.ApprovedCount = approvedFines.Count;
                 vm.ApprovedTotalAmount = approvedFines.Sum(f => f.Amount);
                 vm.RejectedCount = fines.Count(f => f.Status == trafficFineManager.Entities.Enums.FineStatus.Reddedildi);
 
-                // Zaman Bazlı İstatistikler (Oluşturulma tarihine göre)
                 var dailyFines = fines.Where(f => f.CreatedAt.Date == today).ToList();
                 vm.DailyCount = dailyFines.Count;
                 vm.DailyTotal = dailyFines.Sum(f => f.Amount);
 
-                // Haftalık (Son 7 Gün)
                 var weeklyFines = fines.Where(f => f.CreatedAt.Date >= today.AddDays(-7)).ToList();
                 vm.WeeklyCount = weeklyFines.Count;
                 vm.WeeklyTotal = weeklyFines.Sum(f => f.Amount);
 
-                // Aylık (Bu ay)
                 var monthlyFines = fines.Where(f => f.CreatedAt.Month == today.Month && f.CreatedAt.Year == today.Year).ToList();
                 vm.MonthlyCount = monthlyFines.Count;
                 vm.MonthlyTotal = monthlyFines.Sum(f => f.Amount);
 
-                // Yıllık (Bu yıl)
                 var yearlyFines = fines.Where(f => f.CreatedAt.Year == today.Year).ToList();
                 vm.YearlyCount = yearlyFines.Count;
                 vm.YearlyTotal = yearlyFines.Sum(f => f.Amount);
 
-                // En Fazla Ceza Yiyen Kişi
                 if (fines.Any())
                 {
                     var mostFined = fines.GroupBy(f => f.ViolatorTC)
@@ -149,4 +142,5 @@ namespace trafficFineManager.Controllers
         }
     }
 }
+
 

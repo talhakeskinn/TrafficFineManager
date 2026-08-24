@@ -18,11 +18,12 @@
 2. [Sistem Gereksinimleri](#-sistem-gereksinimleri)
 3. [Kurulum ve Çalıştırma](#-kurulum-ve-çalıştırma-çok-basit)
 4. [Test Kullanıcıları ve Şifreler](#-test-kullanıcıları-ve-şifreler)
-5. [Sistemin Detaylı Kullanım Rehberi (Adım Adım)](#-sistemin-detaylı-kullanım-rehberi-adım-adım)
-6. [Öne Çıkan Özellikler](#-öne-çıkan-özellikler)
-7. [Dinamik Seeding ve Büyük Veri](#-dinamik-seeding-yaşayan-veritabanı-ve-büyük-veri)
-8. [Kullanılan Teknolojiler & Mimari](#-kullanılan-teknolojiler--mimari)
-9. [Veritabanı Diyagramı](#-veritabanı-diyagramı-kavramsal-mimari)
+5. [Kimlik Doğrulama ve Güvenlik](#-kimlik-doğrulama-ve-güvenlik-cookie-authentication)
+6. [Uygulamanın Sayfa Sayfa Kullanım Rehberi](#-uygulamanın-sayfa-sayfa-kullanım-rehberi)
+7. [Öne Çıkan Özellikler](#-öne-çıkan-özellikler)
+8. [Dinamik Seeding ve Büyük Veri](#-dinamik-seeding-yaşayan-veritabanı-ve-büyük-veri)
+9. [Kullanılan Teknolojiler & Mimari](#-kullanılan-teknolojiler--mimari)
+10. [Veritabanı Diyagramı](#-veritabanı-diyagramı-kavramsal-mimari)
 
 ---
 
@@ -90,36 +91,42 @@ Cookie Authentication altyapısı sayesinde şifreler veritabanında Hash'lenere
 
 ---
 
-## 📖 Sistemin Detaylı Kullanım Rehberi (Adım Adım)
+## 🔒 Kimlik Doğrulama ve Güvenlik (Cookie Authentication)
 
-Projenin tüm yeteneklerini keşfetmek ve test etmek için aşağıdaki adımları uygulayabilirsiniz:
+Projede oturum yönetimi ve yetkilendirme (Authorization) işlemleri için ASP.NET Core'un yerleşik **Cookie Authentication** mimarisi kullanılmıştır. 
+- Kullanıcıların şifreleri veritabanında düz metin (plain-text) olarak değil, güvenli bir şekilde **Hash'lenerek** saklanır.
+- Sisteme giriş yapıldığında sunucu tarafında oluşturulan şifreli çerez (Cookie) sayesinde her sayfa geçişinde kullanıcı rolü (Claims) kontrol edilir.
+- [Authorize] attribute'ları kullanılarak rolü yetersiz olan bir kişinin URL'i manuel yazsa bile izinsiz sayfalara girmesi engellenmiştir. (Örn: Standart Kullanıcı, Onaylama metoduna istek atamaz).
 
-### 1. Sisteme Giriş (Login)
-Uygulamayı açtığınızda sizi bir Login ekranı karşılar. Yukarıdaki 3 farklı roldeki test kullanıcılarından biriyle giriş yapabilirsiniz. Şifrelerin tamamı `123456` olarak belirlenmiştir. Girdiğiniz role göre sol menüdeki butonlar ve tabloda göreceğiniz veriler dinamik olarak değişir.
+---
 
-### 2. Yeni Ceza Ekleme ve Araç Yönetimi
-`ahmet@test.com` (Standart Kullanıcı) ile giriş yapın. Sol menüden **"Yeni Ceza Ekle"** sayfasına girin.
-- **Plaka Kontrolü:** Formdaki plaka alanına bir plaka girin (Örn: 34ABC123). Plaka yazmayı bitirdiğinizde sistem arkaplanda (AJAX) plakayı sorgular. 
-- Eğer araç veritabanında yoksa, formun altına dinamik olarak Marka ve Model seçme kutuları gelir.
-- **Select2 ile Arama:** Yüzlerce marka ve model içinde kaybolmadan, doğrudan kutuya yazarak (Örn: "Renault") seçiminizi yapabilirsiniz. 
-- Formu kaydedin. SweetAlert2 ile "Başarılı" bildirimi alacaksınız ve eklediğiniz ceza artık **"Yeni"** statüsündedir.
+## 📖 Uygulamanın Sayfa Sayfa Kullanım Rehberi
 
-### 3. Dashboard ve Ceza Listesi (Rol Farkları)
-Sistemden çıkış yapıp `ayse@test.com` (Yönetici) ile girin.
-- Dashboard'da o güne kadar kesilmiş tüm cezaları ve durumlarını görebilirsiniz.
-- Tabloda herhangi bir satıra tıkladığınızda cezanın **Detay Modal'ı (Popup)** açılır. 
-- **Güvenlik Testi:** Yalnızca Yönetici hesabındayken "Sürücü TC No" alanı görünür. Standart Kullanıcı veya Finansman ile girdiğinizde bu alan HTML seviyesinde bile "***" (Gizli) olarak render edilir.
+Sistemi baştan sona test etmek için sayfa işleyiş mantığı şu şekildedir:
 
-### 4. Onay Mekanizması ve Finansman
-Yönetici panosunda, henüz onaylanmamış ("Yeni" statüsünde) cezaların sağ tarafında **✓ (Onayla)** ve **X (Reddet)** butonları bulunur.
-- Yönetici cezayı onayladığında, cezanın statüsü anında **"Finans Onayında"** durumuna geçer.
-- Sistemden çıkıp `fatma@test.com` (Finansman) ile giriş yapın. Finansman sadece tahsilatı yapılacak olan cezalarla ilgilenir. İlgili cezaya tıklayıp onayladığında ceza **"Tamamlandı"** olur ve süreç biter.
+### 1. Açılış ve Giriş Sayfası (/Auth/Login)
+Uygulamayı ilk başlattığınızda sistem sizi otomatik olarak **Giriş (Login)** sayfasına yönlendirir. Form üzerinde anlık (yazdıkça çalışan) canlı validasyon (Unobtrusive Validation) bulunur. Yukarıdaki test hesaplarından biriyle (Örn: `ahmet@test.com`) giriş yaptığınızda yetkilerinize uygun olan Ana Sayfaya (Dashboard) yönlendirilirsiniz.
 
-### 5. Detay ve Log Takibi (Audit Log)
-Cezanın yaşam döngüsü boyunca geçirdiği tüm aşamalar loglanır. 
-- Herhangi bir role sahipken, ceza listesinde satırın en sağındaki **Log (Göz) ikonuna** veya Ceza Geçmişi sayfasına tıklayın.
-- Karşınıza çıkan pencerede: *"Ahmet cezayı ekledi (Saat 10:00)"*, *"Ayşe cezayı inceledi ve onayladı (Saat 11:30)"*, *"Fatma tahsilatı yaptı (Saat 14:00)"* gibi tüm tarihçeyi kimin yaptığını detaylarıyla görebilirsiniz.
-- Eğer yönetici cezayı iptal ederse, girdiği "İptal Nedeni" de bu log ekranında listelenir.
+### 2. Dashboard / Ana Sayfa (/Home/Index)
+Giriş yaptıktan sonra sizi karşılayan özet ekranıdır.
+- Burada sistemdeki "Toplam Ceza Sayısı", "Onaylanan Cezalar", "Bekleyen Cezalar" gibi özet kartları bulunur.
+- En çok ceza yiyen kişi/araç gibi istatistikler listelenir.
+- Rolünüze göre burada göreceğiniz sayılar değişir (Kullanıcı sadece kendi verilerini, yönetici herkesi görür).
+
+### 3. Yeni Ceza Ekleme Sayfası (/TrafficFine/Create)
+Sol menüden "Yeni Ceza Ekle"ye basıldığında açılan akıllı form sayfasıdır.
+- **Plaka Sorgusu:** Plakayı yazdığınız an arkada AJAX çalışır. Plaka veritabanında varsa marka/model otomatik kilitli gelir. Yoksa marka ve modeli Seçme (Select2) kutularından bulup seçmeniz istenir. Araç sisteme otomatik kaydedilir.
+- Bu işlem sonucunda ceza **"Yeni"** statüsünde kaydedilir.
+
+### 4. Ceza Yönetim Panosu (/TrafficFine/Index)
+İşin asıl döndüğü ana listeleme sayfasıdır. Ekrandaki tablo, giriş yapan role göre şekil değiştirir:
+- **Standart Kullanıcı:** Sadece kendi kestiği cezaları görür. TC numaralarını göremez (*** şeklinde gizlenir).
+- **Yönetici (`ayse@test.com`):** Tüm cezaları ve gizli sürücü bilgilerini görebilir. Tablonun sağındaki **✓ (Onayla)** veya **X (Reddet)** butonlarıyla cezayı bir sonraki aşama olan "Finans Onayında" statüsüne geçirir veya iptal eder.
+- **Finansman (`fatma@test.com`):** Sadece Yöneticiden onay almış ("Finans Onayında" olan) cezaları görür. Cezayı seçip "Ödemeyi Tamamla" diyerek cezayı **"Tamamlandı"** statüsüne çeker ve süreci bitirir.
+
+### 5. Tarihçe ve Log Ekranı (/TrafficFine/History)
+Listeden herhangi bir cezanın "Log (Göz)" ikonuna basıldığında açılır.
+Cezanın oluşturulduğu ilk saniyeden tamamlandığı ana kadar kimin saat kaçta ne işlem yaptığı şeffaf olarak listelenir.
 
 ---
 
@@ -175,5 +182,8 @@ Sistemin tüm özelliklerinin anında test edilebilmesi için projeye kapsamlı 
 <div align="center">
   <p>Bu proje mülakat (Case Study) yönergelerine tam uyumlu olarak, en iyi mühendislik pratikleri (Clean Code, Solid Prensipleri, Güvenlik) gözetilerek geliştirilmiştir.</p>
 </div>
+
+
+
 
 

@@ -1,7 +1,6 @@
-@{
+﻿@{
     ViewData["Title"] = "Ceza Sorgulama";
 }
-
 <div class="text-center mt-5 mb-5">
     <div class="mb-3">
         <i class="bi bi-search text-dark" style="font-size: 3rem;"></i>
@@ -9,24 +8,23 @@
     <h2 class="text-dark fw-bold">Kurumsal Ceza Sorgulama Sistemi</h2>
     <p class="lead text-muted small">Sisteme kayıtlı araç plakaları üzerinden güncel ceza durumunu sorgulayabilirsiniz.</p>
 </div>
-
 <div class="row justify-content-center">
     <div class="col-md-6">
         <div class="card shadow-sm border-0 rounded-3" style="border-top: 5px solid #212529 !important;">
             <div class="card-body p-5 bg-white">
                 <form id="plateQueryForm" action="/Home/QueryPlate" method="get">
                     <label class="fw-bold mb-2 small text-muted">Araç Plakası</label>
-                    <div class="input-group input-group-lg mb-3">
-                        <span class="input-group-text bg-light border-end-0"><i class="bi bi-123 text-muted"></i></span>
-                        <input type="text" name="plate" class="form-control border-start-0 ps-0 text-uppercase font-monospace fw-bold" 
-                               placeholder="ÖRN: 34ABC123" required maxlength="10">
-                        <button class="btn btn-dark px-4 fw-bold" type="submit"><i class="bi bi-search me-2"></i> Sorgula</button>
-                    </div>
-                    <div class="text-start mb-4">
+                    <div class="input-group input-group-lg mb-1">
+    <span class="input-group-text bg-light border-end-0"><i class="bi bi-123 text-muted"></i></span>
+    <input type="text" name="plate" id="plateInput" class="form-control border-start-0 ps-0 text-uppercase font-monospace fw-bold" 
+           placeholder="ÖRN: 34ABC123" required maxlength="10" autocomplete="off">
+    <button class="btn btn-dark px-4 fw-bold" type="submit" id="plateQueryBtn"><i class="bi bi-search me-2"></i> Sorgula</button>
+</div>
+<div class="invalid-feedback fw-bold d-none text-start mb-2" id="plateError">Geçersiz plaka formatı! Lütfen doğru bir format giriniz (Örn: 34ABC123).</div>
+<div class="text-start mb-4 mt-2">
                         <small class="text-muted fst-italic"><i class="bi bi-info-circle me-1"></i> Lütfen plakanızı boşluk bırakmadan bitişik yazınız.</small>
                     </div>
                 </form>
-                
                 <div class="text-center mt-4 border-top pt-4">
                     <p class="text-muted small mb-2">Sistem yöneticisi veya yetkili personel misiniz?</p>
                     <a asp-controller="Auth" asp-action="Login" class="btn btn-outline-dark fw-bold px-4 rounded-pill"><i class="bi bi-shield-lock me-2"></i> Yetkili Personel Girişi</a>
@@ -35,7 +33,6 @@
         </div>
     </div>
 </div>
-
 @if (ViewBag.QueriedPlate != null)
 {
     <div class="row justify-content-center mt-5">
@@ -62,7 +59,6 @@
                     </h4>
                 </div>
             }
-            
             @if (ViewBag.Fines != null && ((List<trafficFineManager.Entities.TrafficFine>)ViewBag.Fines).Count > 0)
             {
                 <div class="card shadow-sm border-0 rounded-3">
@@ -129,7 +125,6 @@
                                                 </button>
                                             </td>
                                         </tr>
-
                                         <div class="modal fade" id="historyModal-@fine.Id" tabindex="-1" aria-labelledby="historyModalLabel-@fine.Id" aria-hidden="true">
                                           <div class="modal-dialog modal-lg">
                                             <div class="modal-content">
@@ -186,4 +181,40 @@
             }
         </div>
     </div>
+}
+
+
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Türk Plaka Regex Formatı (Örn: 34ABC12, 06A9999, 35ZZZ99)
+            const plateRegex = /^(0[1-9]|[1-7][0-9]|8[01])[A-Z]{1,3}\d{2,4}$/;
+            
+            $('#plateInput').on('input', function() {
+                let val = $(this).val().trim().toUpperCase();
+                
+                // Karakterleri silip boşluk bırakmasını engellemek için anında temizleyelim
+                val = val.replace(/\s+/g, '');
+                $(this).val(val);
+                
+                if (val.length === 0) {
+                    $(this).removeClass('is-invalid is-valid');
+                    $('#plateError').addClass('d-none').removeClass('d-block');
+                    $('#plateQueryBtn').prop('disabled', false); // let browser handle required
+                    return;
+                }
+
+                if (plateRegex.test(val)) {
+                    $(this).removeClass('is-invalid').addClass('is-valid');
+                    $('#plateError').addClass('d-none').removeClass('d-block');
+                    $('#plateQueryBtn').prop('disabled', false);
+                } else {
+                    $(this).removeClass('is-valid').addClass('is-invalid');
+                    $('#plateError').removeClass('d-none').addClass('d-block');
+                    $('#plateQueryBtn').prop('disabled', true);
+                }
+            });
+        });
+    </script>
 }

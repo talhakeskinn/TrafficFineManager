@@ -1,8 +1,7 @@
-@model trafficFineManager.Models.DashboardViewModel
+﻿@model trafficFineManager.Models.DashboardViewModel
 @{
     ViewData["Title"] = "Yönetim Paneli (Dashboard)";
 }
-
 <style>
     .dash-card {
         border-radius: 12px !important;
@@ -23,7 +22,6 @@
     .dash-card.bg-secondary:hover { background-color: #5c636a !important; }
     .dash-card.bg-info:hover { background-color: #31d2f2 !important; }
     .dash-card.bg-warning:hover { background-color: #ffca2c !important; }
-
     .stat-box {
         border-radius: 8px !important;
         background-color: #ffffff;
@@ -31,17 +29,13 @@
         padding: 15px;
     }
 </style>
-
 <div class="row mb-4 align-items-center">
     <div class="col-md-8">
         <h3 class="fw-bold text-dark mb-1">Hoş Geldiniz, @User.Identity?.Name</h3>
         <p class="text-muted">İşte sistemdeki güncel özet bilgileriniz.</p>
     </div>
 </div>
-
-<!-- Ana 3'lü Kartlar -->
 <div class="row g-4 mb-4">
-    <!-- Bekleyenler -->
     <div class="col-md-4">
         <a href="/TrafficFine/List?filter=@(Model.UserRole == "Yonetici" ? "yonetici_bekleyen" : (Model.UserRole == "Finansman" ? "finans_bekleyen" : "all"))" class="card shadow-sm dash-card bg-primary text-white h-100">
             <div class="card-body p-4 d-flex flex-column justify-content-center align-items-center text-center">
@@ -54,8 +48,6 @@
             </div>
         </a>
     </div>
-    
-    <!-- Onaylananlar -->
     <div class="col-md-4">
         <a href="/TrafficFine/List?filter=onaylanan" class="card shadow-sm dash-card bg-success text-white h-100">
             <div class="card-body p-4 d-flex flex-column justify-content-center align-items-center text-center">
@@ -68,8 +60,6 @@
             </div>
         </a>
     </div>
-    
-    <!-- Toplam Kayıtlar -->
     <div class="col-md-4">
         <a href="/TrafficFine/List?filter=all" class="card shadow-sm dash-card bg-secondary text-white h-100">
             <div class="card-body p-4 d-flex flex-column justify-content-center align-items-center text-center">
@@ -83,9 +73,7 @@
         </a>
     </div>
 </div>
-
 <div class="row">
-    <!-- Zaman Bazlı Ortalama ve Toplamlar -->
     <div class="col-lg-8 mb-4">
         <div class="card border-0 shadow-sm" style="border-radius: 8px !important;">
             <div class="card-header bg-white border-bottom py-3">
@@ -133,8 +121,6 @@
             </div>
         </div>
     </div>
-
-    <!-- En Çok Ceza Yiyen -->
     <div class="col-lg-4 mb-4">
         <div class="card border-0 shadow-sm h-100" style="border-radius: 8px !important;">
             <div class="card-header bg-white border-bottom py-3">
@@ -150,7 +136,6 @@
                     @if (User.IsInRole("Yonetici")) {
                         <p class="text-muted small mb-3">TC: @Model.MostFinedPersonTC</p>
                     }
-                    
                     <div class="row g-2 mt-auto">
                         <div class="col-6">
                             <div class="stat-box">
@@ -177,3 +162,5 @@
         </div>
     </div>
 </div>
+
+

@@ -1,14 +1,11 @@
 ﻿@model List<trafficFineManager.Entities.TrafficFineHistory>
-
 @{
     ViewData["Title"] = "Personel İşlem Geçmişi";
 }
-
 <div class="container-fluid mt-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h3 class="fw-bold text-dark"><i class="bi bi-clock-history text-secondary me-2"></i> Personel İşlem Geçmişi</h3>
     </div>
-    
     <div class="card shadow-sm border-0 rounded-3">
         <div class="card-body p-0">
             <div class="table-responsive">
@@ -117,7 +114,6 @@
         </div>
     </div>
 </div>
-
 @section Scripts {
     <style>
         .row-selectable {
@@ -135,45 +131,35 @@
     </style>
     <script>
         $(document).ready(function() {
-            // Row selection logic
             $(".row-selectable").on("click", function(e) {
                 if ($(e.target).is("input, select, button, a")) return;
                 $(".row-selectable").removeClass("row-selected");
                 $(this).addClass("row-selected");
             });
-
-            // Sorting Logic
             var sortDir = 1;
             var lastSortCol = -1;
-
             $("thead tr:first-child th").css("cursor", "pointer").on("click", function() {
                 var colIdx = $(this).index();
-                
                 if (lastSortCol === colIdx) {
                     sortDir = sortDir * -1;
                 } else {
                     sortDir = 1;
                 }
                 lastSortCol = colIdx;
-
                 $("thead tr:first-child th i.sort-icon").remove();
                 var iconClass = sortDir === 1 ? "bi-caret-down-fill" : "bi-caret-up-fill";
                 $(this).append(' <i class="bi ' + iconClass + ' sort-icon text-info"></i>');
-
                 var rows = $("#auditTableBody tr.row-selectable").get();
-
                 rows.sort(function(a, b) {
                     var cellA = $(a).find("td").eq(colIdx).text().trim().toLowerCase();
                     var cellB = $(b).find("td").eq(colIdx).text().trim().toLowerCase();
-                    
-                    if (colIdx === 0) { // Date
+                    if (colIdx === 0) {
                         var dateA = $(a).find("td").eq(colIdx).data("date") || "";
                         var dateB = $(b).find("td").eq(colIdx).data("date") || "";
                         return dateA.localeCompare(dateB) * sortDir;
                     }
                     return cellA.localeCompare(cellB, 'tr') * sortDir;
                 });
-
                 $("#auditTableBody td").removeClass("sorted-col");
                 $.each(rows, function(index, row) {
                     $(row).find("td").eq(colIdx).addClass("sorted-col");
@@ -181,29 +167,23 @@
                 });
                 applyPagination();
             });
-
-            // Filtering Logic
             function filterTable() {
                 var filters = [];
                 $(".column-filter, .column-select").each(function() {
                     var val = $(this).val().toLowerCase();
                     if (val) filters.push({ colIdx: $(this).data("col"), value: val });
                 });
-
                 var minDate = $(".date-min").val();
                 var maxDate = $(".date-max").val();
-
                 $("#auditTableBody tr.row-selectable").each(function() {
                     var row = $(this);
                     var showRow = true;
-
                     filters.forEach(function(f) {
                         if (showRow) {
                             var cellText = row.find("td").eq(f.colIdx).text().toLowerCase();
                             if (cellText.indexOf(f.value) === -1) showRow = false;
                         }
                     });
-
                     if (showRow && (minDate || maxDate)) {
                         var cellDateStr = row.find("td").eq(0).data("date"); 
                         if (cellDateStr) {
@@ -212,50 +192,36 @@
                             if (maxDate && cellDate > new Date(maxDate)) showRow = false;
                         }
                     }
-
                     if(showRow) row.addClass("filtered-in").show();
                     else row.removeClass("filtered-in").hide();
                 });
-                
                 currentPage = 1;
                 applyPagination();
             }
-
             $(".column-filter, .column-select, .date-min, .date-max").on("keyup change", filterTable);
-
-            // Pagination Logic
             var currentPage = 1;
             var rowsPerPage = 10;
-
             function applyPagination() {
                 var visibleRows = $("#auditTableBody tr.filtered-in");
                 var totalRows = visibleRows.length;
                 var totalPages = Math.ceil(totalRows / rowsPerPage) || 1;
-
                 visibleRows.hide();
                 var start = (currentPage - 1) * rowsPerPage;
                 var end = start + rowsPerPage;
                 visibleRows.slice(start, end).show();
-
                 renderPaginationControls(totalPages);
             }
-
             function renderPaginationControls(totalPages) {
                 $("#paginationContainer").remove();
                 if(totalPages <= 1) return;
-                
                 var html = '<div id="paginationContainer" class="d-flex justify-content-center mt-3"><ul class="pagination pagination-sm">';
                 html += '<li class="page-item ' + (currentPage === 1 ? 'disabled' : '') + '"><a class="page-link" href="#" data-page="prev">Önceki</a></li>';
-                
                 for(var i=1; i<=totalPages; i++) {
                     html += '<li class="page-item ' + (currentPage === i ? 'active' : '') + '"><a class="page-link" href="#" data-page="' + i + '">' + i + '</a></li>';
                 }
-                
                 html += '<li class="page-item ' + (currentPage === totalPages ? 'disabled' : '') + '"><a class="page-link" href="#" data-page="next">Sonraki</a></li>';
                 html += '</ul></div>';
-                
                 $(".table-responsive").after(html);
-                
                 $(".page-link").on("click", function(e) {
                     e.preventDefault();
                     var target = $(this).data("page");
@@ -265,11 +231,10 @@
                     applyPagination();
                 });
             }
-
-            // Init
             $("#auditTableBody tr.row-selectable").addClass("filtered-in");
             applyPagination();
         });
     </script>
 }
+
 

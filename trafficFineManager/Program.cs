@@ -26,7 +26,6 @@ builder.Services.AddAuthentication("Cookies")
 builder.Services.AddFluentValidationAutoValidation(); 
 builder.Services.AddValidatorsFromAssemblyContaining<CreateTrafficFineValidator>(); 
 
-
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())
@@ -52,10 +51,8 @@ using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-    // 🚀 OTO-KURULUM: Uygulama başlarken veritabanı yoksa oluşturur ve migration'ları uygular.
     context.Database.Migrate();
-    
-    // Seed Cities if not completely seeded
+
     if (context.Cities.Count() < 81)
     {
         var citiesList = new string[] {
@@ -88,7 +85,7 @@ using (var scope = app.Services.CreateScope())
                 context.SaveChanges();
                 context.Database.ExecuteSqlRaw("SET IDENTITY_INSERT Cities OFF");
             } catch {
-                // Fallback
+
                 context.SaveChanges();
             } finally {
                 context.Database.CloseConnection();
@@ -96,7 +93,6 @@ using (var scope = app.Services.CreateScope())
         }
     }
 
-    // Seed Districts if mostly empty (we have a few test ones from HasData)
     if (context.Districts.Count() < 100)
     {
         var jsonPath = Path.Combine(Directory.GetCurrentDirectory(), "Data", "SeedData", "ilce.json");
@@ -118,10 +114,10 @@ using (var scope = app.Services.CreateScope())
                         
                         if (ilceAdi != null && int.TryParse(ilIdString, out int ilId))
                         {
-                            // Avoid exact duplicates
+
                             if (!context.Districts.Any(d => d.Name == ilceAdi && d.CityId == ilId))
                             {
-                                // Only add if the referenced City exists!
+
                                 if (context.Cities.Any(c => c.Id == ilId))
                                 {
                                     context.Districts.Add(new trafficFineManager.Entities.District 
@@ -139,9 +135,6 @@ using (var scope = app.Services.CreateScope())
         }
     }
 
-    // Seed Brands and Models from arac_listesi.json
-    // We check if we have less than 150 brands (there are ~180 in total usually). 
-    // This allows continuing if seeding was interrupted.
     if (context.Brands.Count() < 150)
     {
         var jsonPath = Path.Combine(Directory.GetCurrentDirectory(), "Data", "SeedData", "arac_listesi.json");
@@ -159,7 +152,7 @@ using (var scope = app.Services.CreateScope())
                 {
                     brand = new trafficFineManager.Entities.Brand { Name = bName };
                     context.Brands.Add(brand);
-                    context.SaveChanges(); // Get ID
+                    context.SaveChanges();
                 }
                 
                 var existingModelNames = context.Models.Where(m => m.BrandId == brand.Id).Select(m => m.Name).ToList();
@@ -184,7 +177,6 @@ using (var scope = app.Services.CreateScope())
         }
     }
 
-    // Dynamic Seeding for Vehicles and TrafficFines
     if (context.Vehicles.Count() < 5)
     {
         var random = new Random();
@@ -219,7 +211,6 @@ using (var scope = app.Services.CreateScope())
             }
             context.SaveChanges();
 
-            // Seed Fines
             var pastDate = DateTime.Now.AddDays(-30);
             var fines = new List<trafficFineManager.Entities.TrafficFine>();
             var fineStatuses = new[] 

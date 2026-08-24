@@ -19,7 +19,7 @@ namespace trafficFineManager.Validators
                 .Matches(@"^(0[1-9]|[1-7][0-9]|8[01])[a-zA-Z]{1,3}\d{2,4}$").WithMessage("Lütfen geçerli bir Türkiye plakası giriniz (Örn: 34ABC123).")
                 .Must((model, plate) =>
                 {
-                    // 1. KURAL: Mükerrer Kayıt (Aynı plaka, aynı tarih, aynı ceza maddesi) - Kendi ID'si hariç
+
                     bool exists = _context.TrafficFines
                         .Include(t => t.Vehicle)
                         .Any(t => 
@@ -60,7 +60,7 @@ namespace trafficFineManager.Validators
                 .GreaterThan(0).WithMessage("Lütfen bir ceza maddesi seçiniz.")
                 .Must((model, fineTypeId) =>
                 {
-                    // 2. KURAL: Araç Tipi ve Ceza Maddesi Uyumu
+
                     var fineType = _context.FineTypes.Find(fineTypeId);
                     if (fineType != null)
                     {

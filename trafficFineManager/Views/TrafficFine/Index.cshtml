@@ -1,29 +1,23 @@
 ﻿@model List<trafficFineManager.Entities.TrafficFine>
-
 @{
     ViewData["Title"] = ViewBag.FilterTitle ?? "Bütün Kayıt Detayları";
-    bool showSidebar = ViewBag.ShowSidebar == true; // We will use this to determine if we show the top filter bar
+    bool showSidebar = ViewBag.ShowSidebar == true;
     string currentFilter = ViewBag.CurrentFilter as string ?? "all";
-    
-    // Determine button text based on filter
     string filterBtnText = "<i class=\"bi bi-folder2-open me-2\"></i> Tüm İşlemler";
     if(currentFilter == "yonetici_bekleyen") filterBtnText = "<i class=\"bi bi-hourglass-split me-2 text-warning\"></i> Yönetici Onayı Bekleyenler";
     else if(currentFilter == "finans_bekleyen") filterBtnText = "<i class=\"bi bi-hourglass-split me-2 text-warning\"></i> Finans Onayı Bekleyenler";
     else if(currentFilter == "onaylanan") filterBtnText = "<i class=\"bi bi-check-circle me-2 text-success\"></i> Onaylananlar";
     else if(currentFilter == "reddedilen") filterBtnText = "<i class=\"bi bi-x-circle me-2 text-danger\"></i> Reddedilenler";
 }
-
 <div class="container-fluid mt-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h3 class="fw-bold text-dark"><i class="bi bi-card-list text-secondary me-2"></i> @(ViewBag.FilterTitle ?? "Kesilen Trafik Cezaları")</h3>
     </div>
     <hr />
-
     @if (User.IsInRole("Yonetici") || User.IsInRole("Finansman"))
     {
         <div class="card shadow-sm border-0 mb-4 bg-light">
             <div class="card-body py-2 d-flex justify-content-between align-items-center">
-                <!-- Dropdown on the Left -->
                 <div class="dropdown">
                     <button class="btn btn-white border bg-white dropdown-toggle fw-bold text-dark px-4 shadow-sm" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                         @Html.Raw(filterBtnText)
@@ -38,8 +32,6 @@
                         <li><a class="dropdown-item @(currentFilter == "reddedilen" ? "active bg-primary" : "")" asp-action="List" asp-route-filter="reddedilen"><i class="bi bi-x-circle me-2 text-danger"></i> Reddedilenler</a></li>
                     </ul>
                 </div>
-
-                <!-- Action Toolbar on the Right -->
                 <div class="d-flex gap-2 align-items-center">
                     <span class="text-muted small me-2 fw-bold d-none d-md-inline">Seçili İşlem:</span>
                     <button type="button" class="btn btn-sm btn-outline-info action-btn fw-bold" id="btnDetail" disabled><i class="bi bi-card-text me-1"></i> Detay</button>
@@ -59,7 +51,6 @@
     }
     else
     {
-        <!-- Standart Kullanıcı İçin Action Toolbar (Filtre Olmadan) -->
         <div class="card shadow-sm border-0 mb-4 bg-light">
             <div class="card-body py-2 d-flex justify-content-end align-items-center">
                 <div class="d-flex gap-2 align-items-center">
@@ -71,7 +62,6 @@
             </div>
         </div>
     }
-
     <style>
         .compact-table {
             table-layout: fixed;
@@ -92,11 +82,9 @@
         .row-selected td {
             background-color: #cce5ff !important; /* Tamamen farklı, belirgin mavi seçim */
         }
-        
         .sorted-col {
             background-color: #f8f9fa !important;
         }
-        
         /* İnce kenarlıklı yeni buton stili */
         .action-btn {
             border: 1px solid #adb5bd !important;
@@ -109,7 +97,6 @@
             border-color: #6c757d !important;
             color: #212529;
         }
-        
         .action-btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
@@ -117,7 +104,6 @@
             border-color: #dee2e6 !important;
             color: #6c757d !important;
         }
-        
         /* Özel buton renkleri */
         #btnDetail:not(:disabled) { color: #0dcaf0; border-color: #0dcaf0 !important; }
         #btnHistory:not(:disabled) { color: #0d6efd; border-color: #0d6efd !important; }
@@ -125,7 +111,6 @@
         #btnApprove:not(:disabled) { color: #198754; border-color: #198754 !important; }
         #btnReject:not(:disabled) { color: #dc3545; border-color: #dc3545 !important; }
     </style>
-
     <div class="row">
         <div class="col-md-12">
             <div class="table-responsive">
@@ -210,7 +195,6 @@
                                 data-vehicle-type="@fine.Vehicle.VehicleType.ToString()"
                                 data-vehicle-active="@(fine.Vehicle.IsActive ? "✅ Aktif (Kullanımda)" : "❌ Pasif (Kullanım Dışı)")"
                                 data-owner-tc="@(User.IsInRole("Yonetici") ? fine.Vehicle.OwnerTC : "***")">
-                                
                                 <td class="text-center fw-bold">@fine.Id</td>
                                 <td class="fw-bold text-center">@fine.Vehicle.PlateNumber</td>
                                 <td class="text-center"><span class="badge bg-light text-dark border">@fine.Vehicle.VehicleType.ToString()</span></td>
@@ -262,10 +246,6 @@
         </div>
     </div>
 </div>
-
-<!-- Global Modals & Forms -->
-
-<!-- Detail Modal -->
 <div class="modal fade" id="detailModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -296,7 +276,6 @@
                         <label class="text-muted small mb-1">Sahip TC / VKN</label>
                         <h6 class="fw-bold" id="detOwnerTc">-</h6>
                     </div>
-
                     <div class="col-12"><h6 class="border-bottom pb-1 mb-2 mt-3 text-primary fw-bold">👤 Sürücü Bilgileri</h6></div>
                     <div class="col-md-6">
                         <label class="text-muted small mb-1">Ceza Yiyen Sürücü</label>
@@ -306,7 +285,6 @@
                         <label class="text-muted small mb-1">Sürücü TC No</label>
                         <h6 class="fw-bold" id="detTc">-</h6>
                     </div>
-
                     <div class="col-12"><h6 class="border-bottom pb-1 mb-2 mt-3 text-primary fw-bold">📜 Ceza Bilgileri</h6></div>
                     <div class="col-md-6">
                         <label class="text-muted small mb-1">İhlal Maddesi</label>
@@ -344,8 +322,6 @@
         </div>
     </div>
 </div>
-
-<!-- Global Reject Modal -->
 <div class="modal fade" id="globalRejectModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -369,34 +345,24 @@
         </div>
     </div>
 </div>
-
-<!-- Global Approve Form -->
 <form asp-action="Approve" method="post" id="approveForm" class="d-none">
     <input type="hidden" name="id" id="approveFineId" />
 </form>
-
 @section Scripts {
     <script>
         $(document).ready(function() {
             var selectedId = null;
-
-            // Row selection logic
             $(".row-selectable").on("click", function(e) {
                 if ($(e.target).is("input, select, button, a")) return;
-                
                 $(".row-selectable").removeClass("row-selected");
                 $(this).addClass("row-selected");
-
                 selectedId = $(this).data("id");
                 var status = $(this).data("status");
-                
                 $(".action-btn").prop("disabled", false);
                 if (status === "Tamamlandi" || status === "Reddedildi") {
                     $("#btnEdit, #btnApprove, #btnReject").prop("disabled", true);
                 }
             });
-
-            // Toolbar Actions
             $("#btnDetail").on("click", function() {
                 if(!selectedId) return;
                 var row = $("tr[data-id='" + selectedId + "']");
@@ -416,53 +382,41 @@
                 $("#detStatus").text(row.data("status"));
                 new bootstrap.Modal(document.getElementById('detailModal')).show();
             });
-
             $("#btnHistory").on("click", function() {
                 if(!selectedId) return;
                 window.location.href = '/TrafficFine/History/' + selectedId;
             });
-
             $("#btnEdit").on("click", function() {
                 if(!selectedId) return;
                 window.location.href = '/TrafficFine/Edit/' + selectedId;
             });
-
             $("#btnApprove").on("click", function() {
                 if(!selectedId) return;
                 $("#approveFineId").val(selectedId);
                 $("#approveForm").submit();
             });
-
             $("#btnReject").on("click", function() {
                 if(!selectedId) return;
                 $("#rejectFineId").val(selectedId);
                 new bootstrap.Modal(document.getElementById('globalRejectModal')).show();
             });
-
-            // Sorting Logic
             var sortDir = 1;
             var lastSortCol = -1;
-
             $("thead tr:first-child th").css("cursor", "pointer").on("click", function() {
                 var colIdx = $(this).index();
-                
                 if (lastSortCol === colIdx) {
                     sortDir = sortDir * -1;
                 } else {
                     sortDir = 1;
                 }
                 lastSortCol = colIdx;
-
                 $("thead tr:first-child th i.sort-icon").remove();
                 var iconClass = sortDir === 1 ? "bi-caret-down-fill" : "bi-caret-up-fill";
                 $(this).append(' <i class="bi ' + iconClass + ' sort-icon text-info"></i>');
-
                 var rows = $("#fineTableBody tr.row-selectable").get();
-
                 rows.sort(function(a, b) {
                     var cellA = $(a).find("td").eq(colIdx).text().trim().toLowerCase();
                     var cellB = $(b).find("td").eq(colIdx).text().trim().toLowerCase();
-                    
                     if (colIdx === 0) { 
                         return (parseInt(cellA) - parseInt(cellB)) * sortDir;
                     }
@@ -478,7 +432,6 @@
                     }
                     return cellA.localeCompare(cellB, 'tr') * sortDir;
                 });
-
                 $("#fineTableBody td").removeClass("sorted-col");
                 $.each(rows, function(index, row) {
                     $(row).find("td").eq(colIdx).addClass("sorted-col");
@@ -486,35 +439,28 @@
                 });
                 applyPagination();
             });
-
-            // Filtering Logic
             function filterTable() {
                 var filters = [];
                 $(".column-filter, .column-select").each(function() {
                     var val = $(this).val().toLowerCase();
                     if (val) filters.push({ colIdx: $(this).data("col"), value: val });
                 });
-
                 var amountVal = $(".amount-filter").val().replace(/\./g, '').replace(/\s/g, ''); 
                 var minDate = $(".date-min").val();
                 var maxDate = $(".date-max").val();
-
                 $("#fineTableBody tr.row-selectable").each(function() {
                     var row = $(this);
                     var showRow = true;
-
                     filters.forEach(function(f) {
                         if (showRow) {
                             var cellText = row.find("td").eq(f.colIdx).text().toLowerCase();
                             if (cellText.indexOf(f.value) === -1) showRow = false;
                         }
                     });
-
                     if (showRow && amountVal) {
                         var cellAmountText = row.find("td").eq(7).text().toLowerCase().replace(/\./g, '').replace(/\s/g, ''); 
                         if (cellAmountText.indexOf(amountVal) === -1) showRow = false;
                     }
-
                     if (showRow && (minDate || maxDate)) {
                         var cellDateStr = row.find("td").eq(8).data("date"); 
                         if (cellDateStr) {
@@ -523,11 +469,9 @@
                             if (maxDate && cellDate > new Date(maxDate)) showRow = false;
                         }
                     }
-
                     if(showRow) row.addClass("filtered-in").show();
                     else row.removeClass("filtered-in").hide();
                 });
-
                 if (selectedId) {
                     var selectedRow = $("tr[data-id='" + selectedId + "']");
                     if (!selectedRow.hasClass("filtered-in")) {
@@ -536,11 +480,9 @@
                         $(".action-btn").prop("disabled", true);
                     }
                 }
-                
                 currentPage = 1;
                 applyPagination();
             }
-
             $(".amount-filter").on("input", function() {
                 var raw = $(this).val().replace(/\D/g, ''); 
                 if (!raw) {
@@ -550,43 +492,30 @@
                 }
                 filterTable(); 
             });
-
             $(".column-filter, .column-select, .date-min, .date-max").on("keyup change", filterTable);
-
-            // Pagination Logic
             var currentPage = 1;
             var rowsPerPage = 10;
-
             function applyPagination() {
                 var visibleRows = $("#fineTableBody tr.filtered-in");
                 var totalRows = visibleRows.length;
                 var totalPages = Math.ceil(totalRows / rowsPerPage) || 1;
-
                 visibleRows.hide();
                 var start = (currentPage - 1) * rowsPerPage;
                 var end = start + rowsPerPage;
                 visibleRows.slice(start, end).show();
-
                 renderPaginationControls(totalPages);
             }
-
             function renderPaginationControls(totalPages) {
                 $("#paginationContainer").remove();
                 if(totalPages <= 1) return;
-                
                 var html = '<div id="paginationContainer" class="d-flex justify-content-center mt-3"><ul class="pagination pagination-sm">';
-                
                 html += '<li class="page-item ' + (currentPage === 1 ? 'disabled' : '') + '"><a class="page-link" href="#" data-page="prev">Önceki</a></li>';
-                
                 for(var i=1; i<=totalPages; i++) {
                     html += '<li class="page-item ' + (currentPage === i ? 'active' : '') + '"><a class="page-link" href="#" data-page="' + i + '">' + i + '</a></li>';
                 }
-                
                 html += '<li class="page-item ' + (currentPage === totalPages ? 'disabled' : '') + '"><a class="page-link" href="#" data-page="next">Sonraki</a></li>';
                 html += '</ul></div>';
-                
                 $(".table-responsive").after(html);
-                
                 $(".page-link").on("click", function(e) {
                     e.preventDefault();
                     var target = $(this).data("page");
@@ -596,11 +525,11 @@
                     applyPagination();
                 });
             }
-
-            // Init
             $("#fineTableBody tr.row-selectable").addClass("filtered-in");
             applyPagination();
         });
     </script>
 }
+
+
 

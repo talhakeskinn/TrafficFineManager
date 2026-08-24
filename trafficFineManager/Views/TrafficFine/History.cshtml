@@ -34,7 +34,7 @@
                     <tr>
                         <td>@item.Id</td>
                         <td class="fw-bold">
-                            <!-- Eğer User null değilse adını yazdır, yoksa "Bilinmiyor" yaz -->
+                            
                             @(item.User != null ? $"{item.User.FirstName} {item.User.LastName}" : "Bilinmiyor")
                         </td>
                         <td>
@@ -49,3 +49,4 @@
         </table>
     }
 </div>
+

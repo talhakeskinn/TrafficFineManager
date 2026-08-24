@@ -19,7 +19,6 @@ namespace trafficFineManager.Controllers
             _context = context;
         }
 
-        // GET: Vehicle
         public async Task<IActionResult> Index()
         {
             var vehicles = await _context.Vehicles
@@ -29,7 +28,6 @@ namespace trafficFineManager.Controllers
             return View(vehicles);
         }
 
-        // GET: Vehicle/Details/5
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null) return NotFound();
@@ -50,19 +48,17 @@ namespace trafficFineManager.Controllers
             return View(vehicle);
         }
 
-        // GET: Vehicle/Create
         public async Task<IActionResult> Create()
         {
             await PopulateDropdownsAsync();
             return View();
         }
 
-        // POST: Vehicle/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("PlateNumber,BrandId,ModelId,VehicleType,OwnerName,OwnerTC")] Vehicle vehicle)
         {
-            // Plaka zaten var mı?
+
             if (await _context.Vehicles.AnyAsync(v => v.PlateNumber.ToUpper() == vehicle.PlateNumber.ToUpper()))
             {
                 ModelState.AddModelError("PlateNumber", "Bu plaka zaten sistemde kayıtlı!");
@@ -86,8 +82,7 @@ namespace trafficFineManager.Controllers
         {
             var brands = await _context.Brands.OrderBy(b => b.Name).ToListAsync();
             ViewBag.Brands = brands.Select(b => new SelectListItem { Value = b.Id.ToString(), Text = b.Name }).ToList();
-            
-            // Initial empty models list (will be populated by JS)
+
             ViewBag.Models = new List<SelectListItem>();
 
             var vehicleTypes = Enum.GetValues(typeof(VehicleType)).Cast<VehicleType>();
@@ -95,4 +90,5 @@ namespace trafficFineManager.Controllers
         }
     }
 }
+
 

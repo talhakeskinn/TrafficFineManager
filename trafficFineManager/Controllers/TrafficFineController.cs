@@ -245,7 +245,6 @@ namespace trafficFineManager.Controllers
             var brands = await _context.Brands.ToListAsync();
             ViewBag.Brands = brands.Select(b => new SelectListItem { Value = b.Id.ToString(), Text = b.Name }).ToList();
 
-            // Sadece seçili bir marka varsa modellerini yükleriz, aksi takdirde boş liste
             ViewBag.Models = new List<SelectListItem>();
 
             var vehicleTypes = Enum.GetValues(typeof(trafficFineManager.Entities.Enums.VehicleType)).Cast<trafficFineManager.Entities.Enums.VehicleType>();
@@ -261,9 +260,9 @@ namespace trafficFineManager.Controllers
             var cities = await _context.Cities.ToListAsync();
             ViewBag.Cities = cities.Select(c => new SelectListItem { Value = c.Id.ToString(), Text = c.Name }).ToList();
 
-            // District'leri (İlçeleri) sayfa ilk açıldığında BOMBOŞ gönderiyoruz. JavaScript ile dolacak.
             ViewBag.Districts = new List<SelectListItem>();
         }
     }
 }
+
 
