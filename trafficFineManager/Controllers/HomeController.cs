@@ -47,15 +47,6 @@ namespace trafficFineManager.Controllers
                     vm.PendingCount = pendings.Count;
                     vm.PendingTotalAmount = pendings.Sum(x => x.Amount);
                 }
-                else
-                {
-                    vm.UserRole = "StandartKullanici";
-                    var pendings = fines.Where(f => f.CreatorUserId == currentUserId && (f.Status != trafficFineManager.Entities.Enums.FineStatus.Tamamlandi && f.Status != trafficFineManager.Entities.Enums.FineStatus.Reddedildi)).ToList();
-                    vm.PendingCount = pendings.Count;
-                    vm.PendingTotalAmount = pendings.Sum(x => x.Amount);
-
-                    fines = fines.Where(f => f.CreatorUserId == currentUserId).ToList();
-                }
 
                 vm.TotalCount = fines.Count;
                 var approvedFines = fines.Where(f => f.Status == trafficFineManager.Entities.Enums.FineStatus.Tamamlandi).ToList();

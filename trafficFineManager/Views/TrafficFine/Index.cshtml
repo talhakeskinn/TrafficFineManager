@@ -1,7 +1,6 @@
-﻿@model List<trafficFineManager.Entities.TrafficFine>
+@model List<trafficFineManager.Entities.TrafficFine>
 @{
     ViewData["Title"] = ViewBag.FilterTitle ?? "Bütün Kayıt Detayları";
-    bool showSidebar = ViewBag.ShowSidebar == true;
     string currentFilter = ViewBag.CurrentFilter as string ?? "all";
     string filterBtnText = "<i class=\"bi bi-folder2-open me-2\"></i> Tüm İşlemler";
     if(currentFilter == "yonetici_bekleyen") filterBtnText = "<i class=\"bi bi-hourglass-split me-2 text-warning\"></i> Yönetici Onayı Bekleyenler";

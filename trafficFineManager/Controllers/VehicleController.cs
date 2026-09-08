@@ -5,7 +5,6 @@ using Microsoft.EntityFrameworkCore;
 using TrafficFineApp.Data;
 using trafficFineManager.Entities;
 using trafficFineManager.Entities.Enums;
-using trafficFineManager.ViewModels;
 
 namespace trafficFineManager.Controllers
 {

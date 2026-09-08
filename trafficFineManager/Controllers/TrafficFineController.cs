@@ -33,7 +33,6 @@ namespace trafficFineManager.Controllers
             var fines = await _trafficFineService.GetAllFinesAsync();
             
             ViewBag.CurrentFilter = filter;
-            ViewBag.ShowSidebar = true;
 
             switch (filter)
             {

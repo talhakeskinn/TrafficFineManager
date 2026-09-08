@@ -1,4 +1,4 @@
-﻿ using Microsoft.EntityFrameworkCore;
+ using Microsoft.EntityFrameworkCore;
 using TrafficFineApp.Data;
 using trafficFineManager.Entities;
 using trafficFineManager.Entities.Enums;
@@ -18,59 +18,69 @@ namespace trafficFineManager.Services
 
         public async Task CreateFineAsync(CreateTrafficFineViewModel model, int creatorUserId)
         {
-            var vehicle = await _context.Vehicles.FirstOrDefaultAsync(v => v.PlateNumber == model.PlateNumber);
+            using var transaction = await _context.Database.BeginTransactionAsync();
 
-            if (vehicle == null)
+            try
             {
-                vehicle = new Vehicle
+                var vehicle = await _context.Vehicles.FirstOrDefaultAsync(v => v.PlateNumber == model.PlateNumber);
+
+                if (vehicle == null)
                 {
-                    PlateNumber = model.PlateNumber,
-                    BrandId = model.BrandId,
-                    ModelId = model.ModelId,
-                    VehicleType = model.VehicleType,
-                    OwnerName = model.OwnerName,
-                    OwnerTC = model.OwnerTC,
-                    IsActive = true
+                    vehicle = new Vehicle
+                    {
+                        PlateNumber = model.PlateNumber,
+                        BrandId = model.BrandId,
+                        ModelId = model.ModelId,
+                        VehicleType = model.VehicleType,
+                        OwnerName = model.OwnerName,
+                        OwnerTC = model.OwnerTC,
+                        IsActive = true
+                    };
+
+                    _context.Vehicles.Add(vehicle);
+                    await _context.SaveChangesAsync();
+                }
+
+                var fineType = await _context.FineTypes.FindAsync(model.FineTypeId);
+                if (fineType == null) throw new InvalidOperationException("Ceza maddesi bulunamadı.");
+
+                var fine = new TrafficFine
+                {
+                    VehicleId = vehicle.Id,
+                    FineTypeId = model.FineTypeId,
+                    ViolatorName = model.ViolatorName,
+                    ViolatorTC = model.ViolatorTC,
+                    CityId = model.CityId,
+                    DistrictId = model.DistrictId,
+                    ViolationReason = fineType.Description,
+                    Amount = fineType.Amount,
+                    ReceiptNumber = model.ReceiptNumber,
+                    CreatorUserId = creatorUserId,
+                    Status = FineStatus.Yeni,
+                    ViolationDate = model.ViolationDate,
+                    NotificationDate = DateTime.Now
                 };
 
-                _context.Vehicles.Add(vehicle);
+                _context.TrafficFines.Add(fine);
                 await _context.SaveChangesAsync();
+
+                _context.TrafficFineHistories.Add(new TrafficFineHistory
+                {
+                    TrafficFineId = fine.Id,
+                    UserId = creatorUserId,
+                    ActionType = ActionType.Olusturuldu,
+                    NewStatus = FineStatus.Yeni,
+                    Description = "Ceza sisteme eklendi."
+                });
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
             }
-
-            var fineType = await _context.FineTypes.FindAsync(model.FineTypeId);
-            if (fineType == null) throw new Exception("Ceza maddesi bulunamadı.");
-
-            var fine = new TrafficFine
+            catch
             {
-                VehicleId = vehicle.Id,
-                FineTypeId = model.FineTypeId,
-                ViolatorName = model.ViolatorName,
-                ViolatorTC = model.ViolatorTC,
-                CityId = model.CityId,
-                DistrictId = model.DistrictId,
-                ViolationReason = fineType.Description, 
-                Amount = fineType.Amount,               
-                ReceiptNumber = model.ReceiptNumber, 
-                CreatorUserId = creatorUserId,
-                Status = FineStatus.Yeni,
-                ViolationDate = model.ViolationDate,
-                NotificationDate = DateTime.Now
-            };
-
-            _context.TrafficFines.Add(fine);
-            await _context.SaveChangesAsync();
-
-            var history = new TrafficFineHistory
-            {
-                TrafficFineId = fine.Id,
-                UserId = creatorUserId,
-                ActionType = ActionType.Olusturuldu,
-                NewStatus = FineStatus.Yeni,
-                Description = "Ceza sisteme eklendi."
-            };
-
-            _context.TrafficFineHistories.Add(history);
-            await _context.SaveChangesAsync();
+                await transaction.RollbackAsync();
+                throw;
+            }
         }
         public async Task<List<TrafficFine>> GetAllFinesAsync()
         {
@@ -127,7 +137,6 @@ namespace trafficFineManager.Services
             }
             else
             {
-
                 return;
             }
 
@@ -189,7 +198,7 @@ namespace trafficFineManager.Services
                 .Include(t => t.Vehicle)
                 .FirstOrDefaultAsync(t => t.Id == model.Id);
             
-            if (fine == null) throw new Exception("Ceza bulunamadı");
+            if (fine == null) throw new InvalidOperationException("Ceza bulunamadı.");
 
             fine.Vehicle.BrandId = model.BrandId;
             fine.Vehicle.ModelId = model.ModelId;
@@ -198,7 +207,7 @@ namespace trafficFineManager.Services
             fine.Vehicle.OwnerTC = model.OwnerTC;
 
             var fineType = await _context.FineTypes.FindAsync(model.FineTypeId);
-            if (fineType == null) throw new Exception("Ceza maddesi bulunamadı.");
+            if (fineType == null) throw new InvalidOperationException("Ceza maddesi bulunamadı.");
 
             fine.FineTypeId = model.FineTypeId;
             fine.ViolatorName = model.ViolatorName;
@@ -228,7 +237,8 @@ namespace trafficFineManager.Services
         {
             var latestFine = await _context.TrafficFines.OrderByDescending(f => f.Id).FirstOrDefaultAsync();
             int nextId = (latestFine?.Id ?? 0) + 1;
-            return $"MKZ-{DateTime.Now.Year}-{nextId:D6}";
+            var timestamp = DateTime.Now.ToString("HHmmss");
+            return $"MKZ-{DateTime.Now.Year}-{nextId:D6}-{timestamp}";
         }
     }
 }

@@ -70,19 +70,13 @@ namespace TrafficFineApp.Data
                 new FineType { Id = 2, ArticleNumber = "51/2-a", Description = "Hız sınırını %10'dan %30'a kadar aşmak", Amount = 1506.00M, IsActive = true },
                 new FineType { Id = 3, ArticleNumber = "51/2-b", Description = "Hız sınırını %30'dan %50'ye kadar aşmak", Amount = 3135.00M, IsActive = true },
                 new FineType { Id = 4, ArticleNumber = "73/c", Description = "Seyir halinde cep telefonu kullanmak", Amount = 1506.00M, IsActive = true },
-                new FineType { Id = 5, ArticleNumber = "48/5", Description = "Alkollü araç kullanmak (1. Defa)", Amount = 6439.00M, IsActive = true }                 ,
+                new FineType { Id = 5, ArticleNumber = "48/5", Description = "Alkollü araç kullanmak (1. Defa)", Amount = 6439.00M, IsActive = true },
                 new FineType { Id = 6, ArticleNumber = "78/1-a", Description = "Emniyet kemeri bulundurmamak ve kullanmamak", Amount = 690.00M, IsActive = true },
                 new FineType { Id = 7, ArticleNumber = "34/a", Description = "Muayenesi yapılmamış bir aracın trafiğe çıkarılması", Amount = 1506.00M, IsActive = true },
                 new FineType { Id = 8, ArticleNumber = "61/1-a", Description = "Taşıt yolu üzerinde hatalı park etmek", Amount = 690.00M, IsActive = true },
                 new FineType { Id = 9, ArticleNumber = "67/1-d", Description = "Drift atmak (Araçla tehlikeli hareketler yapmak)", Amount = 32233.00M, IsActive = true },
                 new FineType { Id = 10, ArticleNumber = "26/2", Description = "Araçlarda yetkisiz çakar veya siren kullanmak", Amount = 6439.00M, IsActive = true }
-            );
-
-            
-
-            
-
-            
+            ); 
 
             modelBuilder.Entity<TrafficFine>()
                 .HasOne(t => t.City)
@@ -108,13 +102,6 @@ namespace TrafficFineApp.Data
                 new District { Id = 4, CityId = 2, Name = "Çankaya" },
                 new District { Id = 5, CityId = 2, Name = "Yenimahalle" }
             );
-
-            var currentDate = new DateTime(2026, 8, 23, 12, 0, 0);
-            var pastDate1 = currentDate.AddDays(-45);
-            var pastDate2 = currentDate.AddDays(-20);
-            var pastDate3 = currentDate.AddDays(-5);
-
-            
         }
     }
 }
